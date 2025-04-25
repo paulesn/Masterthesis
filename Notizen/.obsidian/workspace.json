@@ -1,0 +1,193 @@
+{
+  "main": {
+    "id": "8d1efcfac943151e",
+    "type": "split",
+    "children": [
+      {
+        "id": "b657c41480ed2a8b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "579507952ab9963b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Related Work/Energy-Efficient Paths in Radio Networks.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Energy-Efficient Paths in Radio Networks"
+            }
+          },
+          {
+            "id": "e8be4fc7b24b7c21",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Related Work/Energy-Efficient Paths in Radio Networks.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Energy-Efficient Paths in Radio Networks"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "df4e31be5db2335b",
+    "type": "split",
+    "children": [
+      {
+        "id": "810e6bbd5f3176e2",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "af1d5976ebc128e2",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "0184141668a91dd3",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "b0d35845dde76ceb",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "1571c21ad198639e",
+    "type": "split",
+    "children": [
+      {
+        "id": "1ae5c6321b09ef14",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "df33fbc6709403f1",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Related Work/Energy-Efficient Paths in Radio Networks.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Energy-Efficient Paths in Radio Networks"
+            }
+          },
+          {
+            "id": "a68b5a228bbde6f9",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Related Work/Energy-Efficient Paths in Radio Networks.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Energy-Efficient Paths in Radio Networks"
+            }
+          },
+          {
+            "id": "fd0a7e769e759816",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "eb87bba569472032",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Related Work/Energy-Efficient Paths in Radio Networks.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Energy-Efficient Paths in Radio Networks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "e8be4fc7b24b7c21",
+  "lastOpenFiles": [
+    "Struktur/Problemdefinition.md",
+    "Related Work/Energy-Efficient Paths in Radio Networks.md",
+    "Struktur",
+    "Related Work"
+  ]
+}
