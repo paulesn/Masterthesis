@@ -1,5 +1,6 @@
 ## k-(hop)-spanner
 
+siehe [[Spanner]]
 In graph theory, a **hop spanner** (also known simply as a **spanner**) is a subgraph that approximates distances in the original graph. Specifically, a **hop spanner** is defined in terms of the number of edges (hops) used to connect nodes.
 ### **Formal Definition:**
 

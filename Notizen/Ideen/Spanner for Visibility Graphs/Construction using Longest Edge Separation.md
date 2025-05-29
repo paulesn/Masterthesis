@@ -1,0 +1,6 @@
+- find the longest edge $l$ in $E$. that is the connection between the two sets.
+	- **Problem**: what if $l$ is not part of any shortest path?
+		- Solution: The edge weights are euklidian therefore it has to be the shortest path
+- start a dijkstra search from each end of the edge. But stop the search before each node that is more than $\frac{l}{s}$ away. those are the sets $A$ and $B$
+- remove all edges between $A$ and $B$ from the visibility graph[^1]. Add $l$ to the Spanner.
+- repeat until there are no edges left in $G$.t

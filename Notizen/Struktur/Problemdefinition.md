@@ -6,3 +6,14 @@ $$
 \sqrt{(x_i-x_{i+1})^2+(y_i-y_{i+1})^2+(z_i-z_{i+1})^2}\leq r\cdot b_i
 $$
 The length of a graph is defined by the amount of points in the list.
+
+## Requirements
+Here are the concrete requirements the algorithm, we are looking for, has.
+
+- Can solve the problem for at least 3 dimensional points
+- Proofable correct or a $\epsilon$-approximation
+- runs significantly faster than Dijkstra or A* given data from the problem Definition
+	- in measured time or with all constants not in $\mathcal O$
+- solves SSSP
+	- with $|E| >> |N|$ 
+	- with jump range only known at query time
