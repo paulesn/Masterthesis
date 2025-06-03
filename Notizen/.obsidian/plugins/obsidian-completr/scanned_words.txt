@@ -223,6 +223,8 @@ GaKo
 GDp
 GdvV
 Gegenbeispiel
+Generalisation
+Generalization
 start
 shorter
 shortcuts
@@ -517,6 +519,14 @@ sollte
 sein
 sieht
 skipping
+spaced
+square
+side
+shifted
+suppost
+shift
+skipped
+small
 and
 an
 all
@@ -829,6 +839,12 @@ archieved
 aabbaa
 abhängig
 angle
+argument
+area
+alpha
+addition
+already
+approx
 target
 to
 the
@@ -1091,6 +1107,10 @@ too
 targets
 together
 treated
+trivial
+triangle
+table
+term
 we
 with
 want
@@ -1310,6 +1330,8 @@ whenever
 was
 what
 wachsen
+were
+without
 draw
 defined
 distance
@@ -1588,6 +1610,10 @@ dadurch
 den
 deinen
 durchrechnen
+divisable
+diagonally
+diagonal
+dominating
 edge
 edges
 each
@@ -1855,6 +1881,9 @@ example
 euklidian
 encompassing
 expensive
+equidistant
+even
+evenly
 from
 found
 for
@@ -2110,6 +2139,11 @@ filter
 filtered
 finden
 für
+further
+fourth
+freely
+frac
+form
 We
 With
 While
@@ -2626,6 +2660,13 @@ consider
 corollary
 clusterdurch
 cosines
+component
+created
+combine
+combined
+cross
+cdot
+cos
 longest
 list
 length
@@ -2878,6 +2919,7 @@ listed
 lassen
 lines
 law
+last
 in
 identify
 its
@@ -3167,6 +3209,11 @@ identical
 instead
 infinit
 ist
+ignoring
+including
+infinitly
+intended
+increased
 our
 on
 of
@@ -3389,6 +3436,8 @@ oOl
 opposite
 ordentlich
 odd
+outline
+outside
 path
 point
 points
@@ -3658,6 +3707,10 @@ place
 position
 potentially
 ponente
+potential
+placing
+placement
+polygon
 midpoint
 most
 more
@@ -3923,6 +3976,9 @@ mit
 muss
 methods
 middlepoint
+moved
+multi
+maximal
 replace
 range
 represented
@@ -4197,6 +4253,7 @@ replacement
 replaced
 represent
 relative
+recursivly
 new
 no
 next
@@ -4435,6 +4492,8 @@ nur
 neighbors
 neighbor
 neighboors
+neither
+neigbors
 Repeat
 Remove
 Requirements
@@ -4842,6 +4901,7 @@ uCi
 unscher
 unweighted
 unweigthed
+unintended
 jump
 jumps
 jYQ
@@ -5495,6 +5555,8 @@ barrieren
 blocker
 block
 blocked
+blockers
+blocking
 Points
 Proof
 Purpose
@@ -5722,6 +5784,7 @@ Pla
 PBp
 PZM
 Per
+Place
 know
 known
 kd
@@ -6380,6 +6443,7 @@ Those
 TODO
 These
 Thats
+TBA
 graph
 grid
 given
@@ -6611,6 +6675,7 @@ green
 guranteed
 große
 gegenüber
+generalized
 Lemma
 LY
 Linearized
@@ -7048,6 +7113,7 @@ EEM
 EsA
 Edges
 Example
+Everything
 vertice
 vertices
 values
@@ -7261,6 +7327,8 @@ visiility
 von
 visual
 visually
+visusal
+visibilit
 For
 Formal
 Factor
@@ -7745,6 +7813,10 @@ Assumming
 According
 Adding
 Alternative
+Alternatively
+Addition
+Additionally
+Angle
 In
 If
 Info
@@ -8004,6 +8076,7 @@ IfP
 Ideas
 Ich
 Invalidating
+Inside
 Neither
 Network
 Note
@@ -8213,6 +8286,8 @@ Nsq
 NVC
 NBL
 Now
+Nor
+Number
 yes
 you
 yr
@@ -10000,6 +10075,7 @@ Book
 Because
 BUT
 Beweis
+Both
 xref
 xC
 xJo

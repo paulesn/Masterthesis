@@ -13,26 +13,28 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Ideen/Spanner for Visibility Graphs/Beispiel für n**2 Spanner in Visibility Graphs.md",
+                "file": "Ideen/Length Filtered Spanner/WSPD Construction.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Beispiel für n**2 Spanner in Visibility Graphs"
+              "title": "WSPD Construction"
             }
           },
           {
-            "id": "0f8aaab6ef7f7c29",
+            "id": "4aaeb4fa206b090c",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "Ideen/Length Filtered Spanner/Fast Closet pair Approximation.md",
-                "mode": "source",
-                "source": false
+                "file": "Related Work/Giri Narasimhan, Michiel Smid - Geometric Spanner Networks-Cambridge University Press (2007).pdf",
+                "page": 83,
+                "left": -115,
+                "top": 482,
+                "zoom": 1.0916666666666666
               },
-              "icon": "lucide-file",
-              "title": "Fast Closet pair Approximation"
+              "icon": "lucide-file-text",
+              "title": "Giri Narasimhan, Michiel Smid - Geometric Spanner Networks-Cambridge University Press (2007)"
             }
           }
         ]
@@ -108,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Ideen/Spanner for Visibility Graphs/Beispiel für n**2 Spanner in Visibility Graphs.md",
+                "file": "Ideen/Length Filtered Spanner/WSPD Construction.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +120,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Beispiel für n**2 Spanner in Visibility Graphs"
+              "title": "Backlinks for WSPD Construction"
             }
           },
           {
@@ -191,11 +193,12 @@
   "active": "60e049b23e61f7e1",
   "lastOpenFiles": [
     "Ideen/Length Filtered Spanner/Fast Closet pair Approximation.md",
-    "Ideen/Spanner for Visibility Graphs/Beispiel für n**2 Spanner in Visibility Graphs.md",
+    "Ideen/Spanner for Visibility Graphs/(old) Beispiel für n**2 Spanner in Visibility Graphs.md",
+    "Ideen/Length Filtered Spanner/WSPD Construction.md",
+    "Related Work/Giri Narasimhan, Michiel Smid - Geometric Spanner Networks-Cambridge University Press (2007).pdf",
+    "Ideen/Spanner for Visibility Graphs/S=G Spanner in Visibility Graphs.md",
     "Ideen/Spanner for Visibility Graphs/Construction with SPL Metric.md",
     "Ideen/Spanner for Visibility Graphs/Problem Statement.md",
-    "Related Work/Giri Narasimhan, Michiel Smid - Geometric Spanner Networks-Cambridge University Press (2007).pdf",
-    "Ideen/Length Filtered Spanner/WSPD Construction.md",
     "Ideen/Spanner for Visibility Graphs/Construction using Longest Edge Separation.md",
     "zzz_OTHER/Theo Memory.md",
     "Ideen/MISC/Improved Spanners.md",
@@ -211,7 +214,7 @@
     "Related Work/PelegAndUlmann.pdf",
     "Ideen/MISC/3-approximation through grids.md",
     "Struktur/Begriffe.md",
-    "Related Work/Energy-Efficient Paths in Radio Networks.md",
+    "media/Energy-Efficient Paths in Radio Networks.md",
     "Related Work/Route Planning in Elite Dangerous.md",
     "Struktur/Problemdefinition.md",
     "Ink/Writing/2025.5.3 - 13.10pm.writing",

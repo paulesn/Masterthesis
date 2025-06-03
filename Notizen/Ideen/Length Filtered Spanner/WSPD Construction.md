@@ -77,10 +77,14 @@ $$
 
 ---
 
-## WSPD Construction by Book
+
+
+---
+
+## WSPD Construction by Book v2
 
 > [!tip] Lemma
-> Given a Graph $G = (V,E)$, a $t$-Spanner $S = (V,E_S)$ for $G$ constructed with the WSPD construction method, $s=4+t$ and a threshold  $c$. The subgraph $S' = (V, \{e \in E_S | d(e)\leq 1.5c\})$ contains a path from $a \in V$ to $b \in V$ if the  Graph $G' = (V_S, \{e \in E | d(e)\leq c\})$ contains a path from $a$ to $b$
+> Given a Graph $G = (V,E)$, a $t$-Spanner $S = (V,E_S)$ for $G$ constructed with the WSPD construction method, $s=4+t$ and a threshold  $c$. The subgraph $S' = (V, \{e \in E_S | d(e)\leq c\})$ contains a path from $a \in V$ to $b \in V$ if the  Graph $G' = (V_S, \{e \in E | d(e)\leq c\})$ contains a path from $a$ to $b$
 
 
 this time we use the wspd spanner construction from the Spanner Book [[Giri Narasimhan, Michiel Smid - Geometric Spanner Networks-Cambridge University Press (2007).pdf]]:
@@ -112,12 +116,11 @@ this time we use the wspd spanner construction from the Spanner Book [[Giri Nara
 \end{tikzpicture}
 \end{document}
 ```
-Proof: ^bd63d2
+Proof:
 
 $\exists (a \to b) \in G' \implies \exists (a \to b) \in S'$:
 for each edge $(p_1,p_2)$ in the path $(a\to b)$ in $G'$ There is a well seperated pair with (w.l.o.G.) $p_1 \in A$ and $p_2 \in B$.
 This is the worst case:
-
 ```tikz
 \begin{document}
 \begin{tikzpicture}
@@ -146,30 +149,25 @@ This is the worst case:
 \end{document}
 ```
 
-The two nodes in our path $p_1$ and $p_2$ are exactly the jump range $j=s\cdot r$ apart from each other and they are both at the opposite ends of their respective circles to the representants of their set. Therefore they are both $2r$ from their representants apart. and $|r_1r_2| = (2+s)r$.
-
-Because $s$ has to be at least $>4$ (lets say it is $4+o\in \mathbb{R_+}$):
+To get from $p_1$ to $p_2$ in the spanner we need the path $p_1, r_1, r_2, p_2$.
+We know that the distance $|p_1p_2|$ is at most the threshold $c$. And the distance between points and their representant is at most $2\frac{|p_1p_2|}{s} = 2\frac cs$.
+Therefore the longest edge needed in $S'$ has the length:
 $$
 \begin{align}
-|r_1,r_2| = (4+s)r &= (4+4+o)r\\
-(4+s)r &= (8+o)r\\
-\\
-j = s\cdot r &= (4+o)r\\
-\\
-c'(4+o)r &> (6+o)r\\
-1.5j &> |r_1,r_2|
+c' &= |r_1p_1|+|p_1p_2|+|p_2r_2|\\
+c' &= \frac {2c}s+c+\frac {2c}s\\
+c' &= \frac {2c}s+\frac{cs}{s}+\frac {2c}s\\
+c' &= \frac{2c+cs+2c}{s}\\
+c' &= \frac{c(2+s+2)}{s}\\
+c' &= c\frac{(4+s)}{s}\\
+c' &= c\left(1+\frac{4}{s}\right)\\
 \end{align}
 $$
-
-Now we have to know if there is an edge between $p_1$ and $r_1$ as well as  $p_2$ and $r_2$. 
-Without loss of generality we only look at $p_1$ and $r_1$.
-These points are at most $\frac j4$ apart from each other. Therefore there is an Edge  $(p_1, r_1) \in G'$.
-Therefore this argumentation can be repeated recursively until $A$ and $B$ each contain only one node. Then $p_1 = r_1$.
+**q.e.d.**
 
 
 
 ---
-
 ## WSPD Construction Closest Pair Representant
 
 > [!tip] Lemma
@@ -218,9 +216,7 @@ $$
 
 **q.e.d.**
 
-- [ ] S' mit c+ epsilon filtern damit man bei der konstruktion keine vergleiche machen muss
-	- [ ] visiblity graphen nachdenken
-- [ ] 
+
 
 ---
 

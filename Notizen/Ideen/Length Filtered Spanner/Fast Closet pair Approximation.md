@@ -113,15 +113,17 @@ Then this creates this areal in which nodes could be that are closer pairs for e
 \begin{document}
 \begin{tikzpicture}
 
+%\clip (-3,0) rectangle ++(16,8);
+
 \node[fill, circle] (a) at (0,0) {};
 \node[fill, circle] (b) at (10,0) {};
 \node[fill, circle] (m) at (5,0) {};
 
-\node[fill=blue, circle] (iA) at ($(a)+(-55:3)$) {};
-\node[fill=green, circle] (iB) at ($(b)+(165:3)$) {};
+\node[fill=blue, circle] (iA) at ($(a)+(90:3)$) {};
+\node[fill=green, circle] (iB) at ($(b)+(180:3)$) {};
 
 \begin{scope}
-	\clip (m)+(0,-8) rectangle ++(7,8);
+	\clip (m)+(0,-3) rectangle ++(7,8);
 	\node [draw, green] at (m) [circle through={(iB)}] {};
 \end{scope}
 \begin{scope}
@@ -173,4 +175,68 @@ Then this creates this areal in which nodes could be that are closer pairs for e
 - $d_A = min(\{|pm| |p \in down_A\})$
 
 
+
+```tikz
+\usetikzlibrary{calc}
+\usetikzlibrary{through}
+\begin{document}
+\begin{tikzpicture}
+
+%\clip (-3,0) rectangle ++(16,8);
+
+\node[fill, circle] (a) at (0,0) {};
+\node[fill, circle] (b) at (10,0) {};
+\node[fill, circle] (m) at (5,0) {};
+
+\node[fill=blue, circle] (iA) at ($(a)+(20:2)$) {};
+\node[fill=green, circle] (iB) at ($(b)+(110:3)$) {};
+
+\begin{scope}
+	\clip (m)+(0,-3) rectangle ++(7,8);
+	\node [draw, green] at (m) [circle through={(iB)}] {};
+\end{scope}
+\begin{scope}
+	\clip (m)+(0,-8) rectangle ++(-7,8);
+	\node [draw, blue] at (m) [circle through={(iA)}] {};
+\end{scope}
+
+\node[below of = a] (at){$c_A$};
+\draw (a) circle (3);
+\node at (a) {A};
+
+\node[below of = b] (bt){$c_B$};
+\draw (b) circle (3);
+\node at (b) {B};
+
+\node[below of = m] (mt){$m$};
+
+
+\begin{scope}
+	
+	\clip (b) circle (3);
+	\node [draw, blue] at (iA) [circle through={(iB)}] {};
+\end{scope}
+
+\begin{scope}
+	\clip (a) circle (3);
+	\node [draw, green] at (iB) [circle through={(iA)}] {};
+\end{scope}
+
+
+%\draw[<->] (3,0) to node[below] {$c = s\cdot r$} (6,0);
+%\draw[<->] (0) to node[below] {$t'c = r+(s\cdot r)$} (3);
+%\draw[-, draw=blue] (0) ++(0,0.2) to node[above] {$|r_{i-1}r_{i}|$} ++(9,0);
+%\draw[-] (0)  to node[below] {$|r_{i-1}p_{i-1}|$} (1);
+%\draw[-] (2)  to node[below] {$|p_{i}r_{i}|$} (3);
+\end{tikzpicture}
+\end{document}
+```
+
+
+$|c_ac_b| < |m_am_b|$
+$c_a(x) < m_a(x)$
+$|z_ac_a| \leq 1$
+$|z_am_a| \leq 1$
+$|z_bc_b| \leq 1$
+$|z_bm_b| \leq 1$
 
