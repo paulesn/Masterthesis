@@ -527,6 +527,7 @@ suppost
 shift
 skipped
 small
+stupid
 and
 an
 all
@@ -1111,6 +1112,7 @@ trivial
 triangle
 table
 term
+theorem
 we
 with
 want
@@ -1884,6 +1886,7 @@ expensive
 equidistant
 even
 evenly
+except
 from
 found
 for
@@ -2667,6 +2670,8 @@ combined
 cross
 cdot
 cos
+crossing
+cyclic
 longest
 list
 length
@@ -3438,6 +3443,7 @@ ordentlich
 odd
 outline
 outside
+outlined
 path
 point
 points
@@ -3711,6 +3717,7 @@ potential
 placing
 placement
 polygon
+polygons
 midpoint
 most
 more
@@ -5785,6 +5792,7 @@ PBp
 PZM
 Per
 Place
+Pythagorean
 know
 known
 kd
