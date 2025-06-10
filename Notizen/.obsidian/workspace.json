@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Ideen/Spanner for Visibility Graphs/S=G Spanner in P-Constructed Visibility Graphs.md",
+                "file": "Ideen/Spanner for Visibility Graphs/S=G Spanner in Visibility Graphs.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "S=G Spanner in P-Constructed Visibility Graphs"
+              "title": "S=G Spanner in Visibility Graphs"
             }
           }
         ],
@@ -109,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Ideen/Spanner for Visibility Graphs/S=G Spanner in P-Constructed Visibility Graphs.md",
+                "file": "Ideen/Spanner for Visibility Graphs/S=G Spanner in Visibility Graphs.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -119,7 +119,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for S=G Spanner in P-Constructed Visibility Graphs"
+              "title": "Backlinks for S=G Spanner in Visibility Graphs"
             }
           },
           {
@@ -191,8 +191,8 @@
   },
   "active": "e60c7ca023ccbb53",
   "lastOpenFiles": [
-    "Ideen/Spanner for Visibility Graphs/S=G Spanner in Visibility Graphs.md",
     "Ideen/Spanner for Visibility Graphs/S=G Spanner in P-Constructed Visibility Graphs.md",
+    "Ideen/Spanner for Visibility Graphs/S=G Spanner in Visibility Graphs.md",
     "Related Work/Giri Narasimhan, Michiel Smid - Geometric Spanner Networks-Cambridge University Press (2007).pdf",
     "Ideen/Spanner for Visibility Graphs/(old) Beispiel für n**2 Spanner in Visibility Graphs.md",
     "Ideen/Length Filtered Spanner/WSPD Construction.md",

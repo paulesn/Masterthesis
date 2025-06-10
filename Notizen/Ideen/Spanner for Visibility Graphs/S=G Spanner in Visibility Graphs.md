@@ -46,7 +46,9 @@ Now if a set of two nodes is used to create a well separated pair, the nodes can
 	$\implies G=S$
 
 - $n=6$
-  ```tikz
+
+
+```tikz
 \usetikzlibrary{calc}
 \usetikzlibrary{through}
 
@@ -72,7 +74,7 @@ Now if a set of two nodes is used to create a well separated pair, the nodes can
   For no well separated pair with more than one node in a set to form, we need the distance between two nodes that are not adjacent $a$ has to be chosen so that $s\cdot a$ is larger than the diameter $2r$ of the circle.
   Then, for any pair of nodes $a,b$ (here $(0),(1)$, because neighbors neighbor is the closest node) and for any other node $c$ ( here $(4)$ or $(5)$, $2r$ being the distance to the furthest node away)  $|ab| > min(s|ac|,s|bc|)$ and therefore no two nodes can be in a set that is well separated to any node. therefore only single node cluster are well separated.
   
-  ```tikz
+```tikz
 \usetikzlibrary{calc}
 \usetikzlibrary{through}
 
