@@ -116,9 +116,6 @@ std::tuple<std::vector<Star>,Graph> load_fmi(const std::string &filepath, int li
 
     for (std::string line; std::getline(file, line);) {
         // update counter
-        if (counter % 1000 == 0) {
-            std::cout << "Loaded " << counter << " lines" << std::endl;
-        }
         counter++;
 
         // Skip empty lines and comments
@@ -139,9 +136,15 @@ std::tuple<std::vector<Star>,Graph> load_fmi(const std::string &filepath, int li
             // Second line contains the number of edges
             number_of_edges = std::stoi(line);
             technical_counter++;
+            cout << ">";
             continue;
         }
         if (technical_counter < number_of_nodes) {
+            if (counter % (number_of_nodes/100) == 0) {
+                std::cout << "|";
+                cout.flush();
+            }
+
             // Read node data
             technical_counter++;
             std::string delimiter = " ";
@@ -149,9 +152,20 @@ std::tuple<std::vector<Star>,Graph> load_fmi(const std::string &filepath, int li
             auto arr = split(line, delimiter);
             systems.emplace_back(stoi(arr[0]), stod(arr[2]), stod(arr[3]), 0, 1);
         } else {
+            if (counter == number_of_nodes) {
+                // We have read all nodes
+                std::cout << endl << ">";
+            }
+            if (technical_counter >= number_of_nodes + number_of_edges) {
+                // We have read all nodes and edges
+                break;
+            }
+            if ((counter-number_of_nodes) % (number_of_edges/100) == 0) {
+                std::cout << "|";
+                cout.flush();
+            }
             // Read edge data
             std::string delimiter = " ";
-
             auto arr = split(line, delimiter);
             g.addEdge(stoi(arr[0]), stoi(arr[1]), stod(arr[2]));
         }

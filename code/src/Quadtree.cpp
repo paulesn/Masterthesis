@@ -1,63 +1,44 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
-#include <csignal>
 #include <tuple>
 #include <string>
-#include <functional>
 #include <iosfwd>
-#include <iosfwd>
-#include <vector>
-#include <vector>
+#include <set>
+#include <unordered_set>
 
 using namespace std;
 
 struct Point {
     double x, y;
     Point(const double x_, const double y_) : x(x_), y(y_) {}
+
+    // Overload the equality operator for Point
+    bool operator==(const Point& other) const {
+        return (x == other.x && y == other.y);
+    }
+    // Overload the less than operator for Point
+    bool operator<(const Point& other) const {
+        return (x < other.x || (x == other.x && y < other.y));
+    }
+
+    // Overload the output operator for Point
+    friend std::ostream& operator<<(std::ostream& os, const Point& p) {
+        os << "(" << p.x << ", " << p.y << ")";
+        return os;
+    }
+};
+
+struct PointHash {
+    std::size_t operator()(const Point& p) const {
+        return std::hash<int>()(p.x) ^ (std::hash<int>()(p.y) << 1);
+    }
 };
 
 double euklidian_distance(Point a, Point b) {
     auto dx = abs(a.x - b.x);
     auto dy = abs(a.y - b.y);
     return sqrt(dx*dx + dy*dy);
-}
-
-/**
- * TODO maybe not calculating the correct circle
- * @param points a vector of points
- * @return the radius and center of a circle enclosing the points
- */
-tuple<Point, double> euklidian_radius(vector<Point> points) {
-    double dim_max = 0;
-    double centerX = points[0].x;
-    double centerY = points[0].y;
-    for (int i = 0; i < points.size(); i++) {
-        for (int j = i + 1; j < points.size(); j++) {
-            auto dim = euklidian_distance(points[i], points[j]);
-            if (dim > dim_max) {
-                dim_max = dim;
-                centerX = abs(points[i].x-points[j].x);
-                centerY = abs(points[i].y-points[j].y);
-            }
-        }
-    }
-    auto rad = dim_max/2;
-    return make_tuple(Point(centerX, centerY), rad);
-}
-
-bool euklidian(vector<Point> pA, vector<Point> pB, double s) {
-    auto A = euklidian_radius(pA);
-    auto radA = get<1>(A);
-    auto centerA = get<0>(A);
-    auto B = euklidian_radius(pB);
-    auto radB = get<1>(B);
-    auto centerB = get<0>(B);
-
-    auto dist = euklidian_distance(centerA, centerB);
-    auto max_rad = max(abs(radA), abs(radB));
-    return dist-(radA+radB) < max_rad*s;
-
 }
 
 struct QuadtreeNode {
@@ -122,12 +103,6 @@ struct QuadtreeNode {
 
     // Public insert: count this new point exactly once
     void insert(Point s) {
-        for (auto p : points) {
-            if (p.x == s.x && p.y == s.y) {
-                cout<<"Already added" << endl;
-                return;
-            }
-        } // do not add any point twice
         points.emplace_back(s);
         insertInternal(s);
     }
@@ -172,84 +147,6 @@ struct QuadtreeNode {
             return text;
     }
 
-
-    std::vector<std::tuple<Point, Point>> rec_wspd(
-        QuadtreeNode *other,
-        const double s,
-        double (*dist_function)(Point a, Point b) = euklidian_distance,
-        tuple<Point, double> (*radius_function)(vector<Point>) = euklidian_radius
-    ){
-        // defensive null check
-        if (other == nullptr) return {};
-
-        // check if one of the subtrees is empty, if yes return nothing
-        if (points.empty() || other->points.empty()) {
-            cout << "empty subttree" << endl;
-            return {};
-        }
-
-        // if both of the nodes are leaf nodes, it is always well separated
-        if (is_leaf && other->is_leaf) {
-            // if the two nodes are the same return nothing
-            if (points[0].x == other->points[0].x && points[0].y == other->points[0].y) {return {};}
-
-            //TODO remove security check if any is empty
-            if (points.empty() || other->points.empty()) {return {};}
-
-            cout << "Both leaf nodes reached" << endl;
-
-            return { std::make_tuple(points[0], other->points[0]) };
-        }
-
-        //self-case
-        if (this ==  other) {
-            // return all pairs of children
-            std::vector<std::tuple<Point, Point>> pairs;
-            for (const auto child1: {NW,NO,SW,SO}) {
-                if (!child1->points.empty()) { // defensive code to prevent to many checks
-                    for (const auto child2: {NW,NO,SW,SO}) {
-                        if (!child2->points.empty()) {
-                            auto temp_pairs = child1->rec_wspd(child2, s, dist_function, radius_function);
-                            if (!temp_pairs.empty()) pairs.insert(pairs.end(), temp_pairs.begin(),temp_pairs.end());
-                        }
-                    }
-                }
-            }
-        };
-
-        const double dist = dist_function(Point(cX,cY), Point(other->cX,other->cY));
-        const double rad = std::max(get<1>(radius_function(points)), get<1>(radius_function(other->points)));
-        if (dist >= s * rad) {
-            cout << "WSP found with dist = " << dist << endl;
-            std::vector<std::tuple<Point, Point>> pairs;
-            pairs.emplace_back(points[0], other->points[0]);
-        }
-
-        // Choose larger for further splitting
-        QuadtreeNode* larger = (height > other->height) ? this : other;
-        QuadtreeNode* smaller = (height > other->height) ? other : this;
-        if (larger->is_leaf) std::swap(larger, smaller);
-
-        std::vector<std::tuple<Point, Point>> pairs;
-
-        auto lNW = larger->NW;
-        auto lnw_pairs = smaller->rec_wspd(lNW, s, dist_function, radius_function);
-        pairs.insert(pairs.end(), lnw_pairs.begin(),lnw_pairs.end());
-
-        auto lNO = larger->NO;
-        auto lno_pairs = smaller->rec_wspd(lNO, s, dist_function, radius_function);
-        pairs.insert(pairs.end(), lno_pairs.begin(),lno_pairs.end());
-
-        auto lSW = larger->SW;
-        auto lsw_pairs = smaller->rec_wspd(lSW, s, dist_function, radius_function);
-        pairs.insert(pairs.end(), lsw_pairs.begin(),lsw_pairs.end());
-
-        auto lSO = larger->SO;
-        auto lso_pairs = smaller->rec_wspd(lSO, s, dist_function, radius_function);
-        pairs.insert(pairs.end(), lso_pairs.begin(),lso_pairs.end());
-
-        return pairs;
-    }
 
     [[nodiscard]] int getDepth(int call_level) const {
         if (is_leaf) return call_level;
@@ -296,12 +193,17 @@ private:
 struct Quadtree {
     QuadtreeNode root;
     double height;
+    std::unordered_set<Point, PointHash> pointSet;
 
     explicit Quadtree(const double height_=1)
-        : root(0,0, height_), height(height_) {}
+        : root(0,0, height_), height(height_), pointSet() {}
     ~Quadtree() = default;
 
     void insert(const Point p) {
+        if (pointSet.find(p) != pointSet.end()) {
+            return; // point already in tree, do not insert again
+        }
+        pointSet.insert(p);
         if (root.area_contains(p)) {
             root.insert(p);
         } else {
@@ -323,8 +225,12 @@ struct Quadtree {
         return root.getDepth(1);
     }
 
-    auto rec_wspd(const double s) {
-        return root.rec_wspd(&root, s);
+    auto normalize_pair(QuadtreeNode* a, QuadtreeNode* b) {
+        if (a->cX < b->cX || (a->cX == b->cX && a->cY < b->cY)) {
+            return std::make_tuple(a, b);
+        } else {
+            return std::make_tuple(b, a);
+        }
     }
 
     /**
@@ -334,53 +240,63 @@ struct Quadtree {
      * @return
      */
     auto wspd(
-            const double s,
-            bool (*wsp_check)(vector<Point>, vector<Point>, double) = euklidian
+            const double s
+            //bool (*wsp_check)(vector<Point>*, vector<Point>*, double) = euklidian
         ) {
         const int depth = getDepth(); // the depth of the tree
-        const int cells = 4^(depth)+1;
+        const int cells = pow(4, depth)*depth;
         const int cell_pairs = cells*cells;
 
         std::vector<std::tuple<Point, Point>> pairs;
         std::vector<std::tuple<QuadtreeNode*, QuadtreeNode*>> parings_todo;
-        parings_todo.reserve(cells);
+        std::set<std::pair<QuadtreeNode*, QuadtreeNode*>> seen;
+
+        parings_todo.reserve(cell_pairs);
         parings_todo.emplace_back(&root, &root);
+
+
+        int skipped_because_nlptr = 0;
+        int skipped_because_duplicate = 0;
+        int skipped_add_because_nlptr = 0;
 
         //for (int i=0; i < cell_pairs; i++) {
         while (true){
-            cout << "----------------------------------------------------------------"  << endl;
+
+            // loop end condition
             if (parings_todo.empty()) break;
 
+            // get next pair
             auto self = get<0>(parings_todo.back());
             auto other = get<1>(parings_todo.back());
+
             parings_todo.pop_back();
 
             // defensive null check
-            if (other == nullptr) continue;
-            if (self == nullptr) continue;
+            if (other == nullptr) {skipped_because_nlptr++; continue;}
+            if (self == nullptr) {skipped_because_nlptr++; continue;}
+
+            //normalize pair
+            auto pair = normalize_pair(self, other);
+
+            // check if we already processed this pair
+            if (seen.find(std::make_pair(self, other)) != seen.end()) {
+                skipped_because_duplicate++;
+                continue;
+            }
+            seen.insert(std::make_pair(self, other));
+
 
             // check if one of the subtrees is empty, if yes return nothing
             if (self->points.empty() || other->points.empty()) {
-                cout << "empty subttree" << endl;
                 continue;
             }
 
-            // if both of the nodes are leaf nodes, it is always well separated
-            if (self->is_leaf && other->is_leaf) {
-                // if the two nodes are the same return nothing
-                if (self->points[0].x == other->points[0].x && self->points[0].y == other->points[0].y) {continue;}
-
-                //TODO remove security check if any is empty
-                if (self->points.empty() || other->points.empty()) {continue;}
-
-                cout << "Both leaf nodes reached" << endl;
-                pairs.emplace_back(self->points[0], other->points[0]);
-            }
-
-            //self-case
+            // check the self case
             if (self == other) {
-                cout << "Self Case" << endl;
-                // add all pairs of children
+                if (self->is_leaf) {
+                    // if the two nodes are the same return nothing
+                    continue;
+                }
                 parings_todo.emplace_back(self->NW, self->NW);
                 parings_todo.emplace_back(self->NW, self->NO);
                 parings_todo.emplace_back(self->NW, self->SW);
@@ -395,35 +311,71 @@ struct Quadtree {
 
                 parings_todo.emplace_back(self->SO, self->SO);
                 continue;
-            };
+            }
 
-            if (wsp_check(self->points, other->points, s)) {
-                cout << "WSP found with dist" << endl;
+            // check for well separation
+            // Case 1 - both nodes are leaf nodes
+            if (self->is_leaf && other->is_leaf) {
+                // if the two nodes are the same return nothing
+                if (self != other) {
+                    pairs.emplace_back(self->points[0], other->points[0]);
+                }
+                continue;
+            }
+
+            // Case 2 - nodes are well separated
+            // TODO easier wspd_check remove later
+            auto radius = sqrt(self->height*self->height + self->height/2*self->height/2);
+            auto other_radius = sqrt(other->height*other->height + other->height/2*other->height/2);
+            auto dist = euklidian_distance(Point(self->cX, self->cY), Point(other->cX, other->cY));
+            if (max(radius, other_radius)*s < dist) {
                 pairs.emplace_back(self->points[0], other->points[0]);
                 continue;
             }
+
+            //if (wsp_check(&(self->points), &(other->points), s)) {
+            //    pairs.emplace_back(self->points[0], other->points[0]);
+            //    continue;
+            //}
 
             // Choose larger for further splitting
             QuadtreeNode* larger = (self->height > other->height) ? self : other;
             QuadtreeNode* smaller = (self->height > other->height) ? other : self;
             if (larger->is_leaf) std::swap(larger, smaller);
 
-
-            cout << "no wspd found -> keep separating" << endl;
             auto lNW = larger->NW;
+            if (lNW == nullptr) {
+                skipped_add_because_nlptr++;
+                continue;
+            }
             parings_todo.emplace_back(smaller, lNW);
 
             auto lNO = larger->NO;
+            if (lNO == nullptr) {
+                skipped_add_because_nlptr++;
+                continue;
+            }
             parings_todo.emplace_back(smaller, lNO);
 
             auto lSW = larger->SW;
+            if (lSW == nullptr) {
+                skipped_add_because_nlptr++;
+                continue;
+            }
             parings_todo.emplace_back(smaller, lSW);
 
             auto lSO = larger->SO;
+            if (lSO == nullptr) {
+                skipped_add_because_nlptr++;
+                continue;
+            }
             parings_todo.emplace_back(smaller, lSO);
         }
         cout << pairs.size() << endl;
         cout << parings_todo.size() << endl;
+        cout << "Skipped because null pointer: " << skipped_because_nlptr << endl;
+        cout << "Skipped because duplicate: " << skipped_because_duplicate << endl;
+        cout << "Skipped because null pointer in add: " << skipped_add_because_nlptr << endl;
         return pairs;
     }
 

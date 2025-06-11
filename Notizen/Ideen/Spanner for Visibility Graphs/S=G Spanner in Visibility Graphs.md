@@ -302,3 +302,6 @@ $$
 80\left(\frac{n}{10}\right)^2 = 0.8n^2 \implies \mathcal O(n^2)
 $$
 
+nochmal zeigen: für ein fixes $s$ (z.B. 4) kann man einen Graphen bauen mit quadratischen spanner edges. (zwei linien gegenüber)
+- erst wenn blocker nicht teil des graphen sind
+- Dann wenn dei blocker teil des graphen sind
