@@ -22,8 +22,6 @@ add_executable(WSPDTest
         src/Dataloader.cpp
         src/Dataloader.hpp
         src/ThetaSpanner.cpp
-        src/HubLabels.hpp
-        src/HubLabels.cpp
 )
 
 add_executable(GraphTest

@@ -19,7 +19,7 @@ int main() {
     int theta = 4; // Number of zones
     double s = 2;
     bool using_wspd_e = true;
-    bool using_wspd_spd = true;
+    bool using_wspd_spd = false;
     bool using_theta = true;
 
     string path = "../../data/0025.32.fmi";
