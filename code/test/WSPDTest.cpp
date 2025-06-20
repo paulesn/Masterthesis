@@ -49,6 +49,12 @@ int main() {
     Graph spanner_sp = Graph(graph.n);
     Graph spanner_theta = Graph(graph.n);
 
+    long time_t =-1;
+    long time_sp =-1;
+    long time_e =-1;
+
+
+
     ///////////////////////////////////////////////////////////////////////////////////
     /// INSERT SYSTEMS INTO THE QUADTREE
     ///////////////////////////////////////////////////////////////////////////////////
@@ -61,6 +67,7 @@ int main() {
             used_points.push_back(p);
         }
     }
+
     auto all_points = tree->get_all_points();
     if (all_points.size() != counter) {
         std::cout << "Error: Quadtree contains " << all_points.size() << " points, but expected " << systems.size() << "." << std::endl;
@@ -78,8 +85,9 @@ int main() {
         spanner_e = wspd(tree, s, &graph);
         auto end1 = std::chrono::high_resolution_clock::now();
 
+        time_e = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count();
         std::cout << "wspd_e("<< s << ") took "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count()
+              << time_e
               << " ms. And created "<< spanner_e.number_of_edges
               << " edges." << std::endl;
     }
@@ -89,8 +97,10 @@ int main() {
         spanner_sp = wspd_spd(tree, s, graph);
         auto end2 = std::chrono::high_resolution_clock::now();
 
+        time_sp = std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count();
+
         std::cout << "wspd_sp("<< s << ") took "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count()
+              << time_sp
               << " ms. And created " << spanner_sp.number_of_edges << " edges." << std::endl;
         std::cout << "For   " << systems.size() << " nodes." << std::endl;
     }
@@ -100,8 +110,10 @@ int main() {
         spanner_theta = create_theta_spanner_graph(&graph, theta);
         auto end3 = std::chrono::high_resolution_clock::now();
 
+        time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();
+
         std::cout << "theta("<< theta << ") took "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count()
+              << time_t
               << " ms. And created " << spanner_theta.number_of_edges << " edges." << std::endl;
         std::cout << "For   " << systems.size() << " nodes." << std::endl;
     }
@@ -175,18 +187,21 @@ int main() {
     cout << "----------------------------------------------------------------------------------" << std::endl;
     std::cout << "Spanner SPD has " << (using_wspd_spd ? "" : "not ") << "been used." << std::endl;
     std::cout << "Spanner SPD has " << spanner_sp.number_of_edges << " Edges." << std::endl;
+    std::cout << "Spanner SPD has been calculated in " << time_sp << " ms." << std::endl;
     std::cout << "Spanner SPD has infinity: " << (sp_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner SPD has negative t-value: " << (sp_has_neg_t ? "Yes" : "No") << std::endl;
     std::cout << "Spanner SPD max t-value: " << sp_max_t << std::endl;
     std::cout << "Spanner SPD mean t-value: " << (sp_mean_t / number_of_tests) << std::endl << std::endl;
     std::cout << "Spanner E has " << (using_wspd_e ? "" : "not ") << "been used." << std::endl;
     std::cout << "Spanner E has " << spanner_e.number_of_edges << " Edges." << std::endl;
+    std::cout << "Spanner E has been calculated in " << time_e << " ms." << std::endl;
     std::cout << "Spanner E has infinity: " << (e_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner E has negative t-value: " << (e_has_neg_t ? "Yes" : "No") << std::endl;
     std::cout << "Spanner E max t-value: " << e_max_t << std::endl;
     std::cout << "Spanner E mean t-value: " << (e_mean_t/ number_of_tests)<< std::endl << std::endl;
     std::cout << "Spanner Theta has " << (using_theta ? "" : "not ") << "been used." << std::endl;
     std::cout << "Spanner Theta has " << spanner_theta.number_of_edges << " Edges." << std::endl;
+    std::cout << "Spanner Theta has been calculated in " << time_t << " ms." << std::endl;
     std::cout << "Spanner Theta has infinity: " << (t_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner Theta has negative t-value: " << (theta_has_neg_t ? "Yes" : "No") << std::endl;
     std::cout << "Spanner Theta max t-value: " << theta_max_t << std::endl;
