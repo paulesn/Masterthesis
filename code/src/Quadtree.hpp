@@ -52,7 +52,7 @@ struct Quadtree {
     explicit Quadtree(double height_ = 1);
     ~Quadtree() = default;
 
-    void insert(Point p);
+    bool insert(Point p);
     void print() const;
     std::vector<Point> get_all_points() const;
     bool contains(Point p) const{return root.contains(p);}
@@ -62,10 +62,10 @@ struct Quadtree {
 std::tuple<QuadtreeNode*, QuadtreeNode*> normalize_pair(QuadtreeNode* a, QuadtreeNode* b);
 
 // Well-separated pair decomposition (WSPD) using Euclidean distance
-std::vector<std::tuple<Point, Point>> wspd(const Quadtree* tree, double s);
+Graph wspd(const Quadtree* tree, double s, Graph* g);
 
 // WSPD using shortest-path distances from the Graph
-std::vector<std::tuple<Point, Point>> wspd_spd(const Quadtree* tree, double s, Graph g);
+Graph wspd_spd(const Quadtree* tree, double s, Graph g);
 
 
 #endif // QUADTREE_HPP

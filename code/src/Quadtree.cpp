@@ -191,14 +191,15 @@ void QuadtreeNode::insertInternal(Point s) {
 
 ::Quadtree::Quadtree(double height_): root(0,0, height_, nullptr), height(height_), pointSet() {}
 
-void ::Quadtree::insert(Point p) {
+bool ::Quadtree::insert(Point p) {
     static int counter = 0;
     //std::cout << counter << std::endl;
     counter++;
     auto it = pointSet.find(p);
     if (it != pointSet.end()) {
         auto found = *it;
-        return; // point already in tree, do not insert again
+        //std::cout << "Point (" << p.x << ", " << p.y << ") already exists in the quadtree as point (" << found.x << ", " << found.y << ")." << std::endl;
+        return false; // point already in tree, do not insert again
     }
     pointSet.insert(p);
     if (root.QuadtreeNode::area_contains(p)) {
@@ -214,6 +215,7 @@ void ::Quadtree::insert(Point p) {
         root = newRoot;
         for (const auto old_point: points) {root.insert(old_point);}
     }
+    return true; // point successfully inserted
 }
 
 void Quadtree::print() const { std::cout << root.QuadtreeNode::rec_string(); }
@@ -239,11 +241,11 @@ std::tuple<QuadtreeNode*, QuadtreeNode*> normalize_pair(QuadtreeNode* a, Quadtre
 /**
  * a well separated pair decomposition (WSPD) algorithm that uses the euklidian distance to check if two sets of points are well-separated.
  */
-std::vector<std::tuple<Point, Point>> wspd(const Quadtree* tree, const double s) {
+Graph wspd(const Quadtree* tree, const double s, Graph* g) {
 
     auto root = tree->root;
+    Graph spanner = Graph(g->id_point_map.size());
 
-    std::vector<std::tuple<Point, Point>> pairs;
     std::vector<std::tuple<QuadtreeNode*, QuadtreeNode*>> parings_todo;
     std::set<std::pair<QuadtreeNode*, QuadtreeNode*>> seen;
     parings_todo.emplace_back(&root, &root);
@@ -257,7 +259,7 @@ std::vector<std::tuple<Point, Point>> wspd(const Quadtree* tree, const double s)
     while (true){
         counter++;
         if (counter %100000 == 0) {
-            cout << "Processed " << counter << " pairs. Current size of parings_todo: " << parings_todo.size() << endl;
+            cout << "Processed " << counter << " pairs. Current size of parings_todo: " << parings_todo.size() << "                                      \r";
         }
 
         // loop end condition
@@ -297,7 +299,7 @@ std::vector<std::tuple<Point, Point>> wspd(const Quadtree* tree, const double s)
         if (self->is_leaf && other->is_leaf) {
             // if the two nodes are the same return nothing
             if (self != other && !self->points.empty() && !other->points.empty()) {
-                pairs.emplace_back(self->points[0], other->points[0]);
+                spanner.addEdge(self->points[0].id, other->points[0].id, euklidian_distance(self->points[0], other->points[0]));
             }
             continue;
         }
@@ -312,7 +314,7 @@ std::vector<std::tuple<Point, Point>> wspd(const Quadtree* tree, const double s)
         if (max(radius, other_radius)*s < dist) {
             if (!self->points.empty() && !other->points.empty()) {
                 // if the two nodes are well separated, add the first point of each set as a pair
-                pairs.emplace_back(self->points[0], other->points[0]);
+                spanner.addEdge(self->points[0].id, other->points[0].id, euklidian_distance(self->points[0], other->points[0]));
             }
             continue;
         }
@@ -328,12 +330,11 @@ std::vector<std::tuple<Point, Point>> wspd(const Quadtree* tree, const double s)
             if (child) parings_todo.emplace_back(smaller, child);
         }
     }
-    cout << pairs.size() << endl;
     cout << parings_todo.size() << endl;
     cout << "Skipped because null pointer: " << skipped_because_nlptr << endl;
     cout << "Skipped because duplicate: " << skipped_because_duplicate << endl;
     cout << "Skipped because null pointer in add: " << skipped_add_because_nlptr << endl;
-    return pairs;
+    return spanner;
 }
 
 /**
@@ -342,11 +343,12 @@ std::vector<std::tuple<Point, Point>> wspd(const Quadtree* tree, const double s)
  * @param s
  * @return
  */
-std::vector<std::tuple<Point, Point>> wspd_spd(const Quadtree* tree, const double s, Graph g) {
+Graph wspd_spd(const Quadtree* tree, const double s, Graph g) {
 
     auto root = tree->root;
+    Graph spanner = Graph(g.id_point_map.size());// new graph with same nodes
 
-    std::vector<std::tuple<Point, Point>> pairs;
+    //std::vector<std::tuple<Point, Point>> pairs; NO longer needed
     std::vector<std::tuple<QuadtreeNode*, QuadtreeNode*>> parings_todo;
     std::set<std::pair<QuadtreeNode*, QuadtreeNode*>> seen;
     parings_todo.emplace_back(&root, &root);
@@ -360,7 +362,7 @@ std::vector<std::tuple<Point, Point>> wspd_spd(const Quadtree* tree, const doubl
     while (true){
         counter++;
         if (counter %100000 == 0) {
-            cout << "Processed " << counter << " pairs. Current size of parings_todo: " << parings_todo.size() << endl;
+            cout << "Processed " << counter << " pairs. Current size of parings_todo: " << parings_todo.size() << "\r";
         }
 
         // loop end condition
@@ -397,10 +399,13 @@ std::vector<std::tuple<Point, Point>> wspd_spd(const Quadtree* tree, const doubl
 
         // check for well separation
         // Case 1 - both nodes are leaf nodes
+        auto temp = g.dijkstra(698, 686, -1);
+
         if (self->is_leaf && other->is_leaf) {
             // if the two nodes are the same return nothing
             if (self != other && !self->points.empty() && !other->points.empty()) {
-                pairs.emplace_back(self->points[0], other->points[0]);
+                // TODO replace with hublabel query
+                spanner.addEdge(self->points[0].id,other->points[0].id, get<1>(g.dijkstra(self->points[0].id,other->points[0].id)));
             }
             continue;
         }
@@ -409,7 +414,10 @@ std::vector<std::tuple<Point, Point>> wspd_spd(const Quadtree* tree, const doubl
         auto set1 (self->points);
         auto set2 (other->points);
 
-        auto path = g.wspdCheck(set1, set2,self->inner_sp_distance, other->inner_sp_distance, s );
+        auto result = g.wspdCheck(set1, set2,self->inner_sp_distance, other->inner_sp_distance, s );
+        auto path = std::get<0>(result);
+        double dist = std::get<1>(result);
+
         if (!path.empty()){
             // TODO CHOOSE CORRECT SNIPPET
             /* this code snippet would have added the shortest path between the two sets of points
@@ -420,14 +428,10 @@ std::vector<std::tuple<Point, Point>> wspd_spd(const Quadtree* tree, const doubl
             }
             */
             // instead this code snipped adds the start and end point of the path as direct edge
-            auto p1 = Point(0,0, path[0]); // Attention: the points loose their coordiantes in this process
-            auto p2 = Point(0,0, path[path.size()-1]);
-            pairs.emplace_back(p1, p2);
+            auto p1 = g.id_point_map[0]; // Attention: the points loose their coordiantes in this process
+            auto p2 = g.id_point_map[path.size()-1];
+            spanner.addEdge(p1.id,p2.id, dist, true);
 
-            // and this code snippet adds the first point in each set as direct edge
-            if (!set1.empty() && !set2.empty()) {
-                pairs.emplace_back(set1[0], set2[0]);
-            }
             continue;
         }
 
@@ -444,11 +448,10 @@ std::vector<std::tuple<Point, Point>> wspd_spd(const Quadtree* tree, const doubl
             if (child) parings_todo.emplace_back(smaller, child);
         }
     }
-    cout << pairs.size() << endl;
     cout << parings_todo.size() << endl;
     cout << "Skipped because null pointer: " << skipped_because_nlptr << endl;
     cout << "Skipped because duplicate: " << skipped_because_duplicate << endl;
     cout << "Skipped because null pointer in add: " << skipped_add_because_nlptr << endl;
-    return pairs;
+    return spanner;
 
 }

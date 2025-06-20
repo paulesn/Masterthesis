@@ -4,17 +4,26 @@
 #include <vector>
 #include <utility>
 #include <iostream>
+#include <unordered_set>
+
+
+struct pair_hash {
+    size_t operator()(const std::pair<int, int>& p) const {
+        return std::hash<int>()(p.first) ^ (std::hash<int>()(p.second) << 1);
+    }
+};
 
 // Define Point structure
 struct Point {
     double x, y;
     int id; // Unique identifier for the point, -1 if not set
 
-    Point(double x_, double y_);
-    Point(double x_, double y_, int id_);
+    Point(double x_, double y_, int level_=-1);
+    Point(double x_, double y_, int id_, int level_=-1);
 
     bool operator==(const Point& other) const;
     bool operator<(const Point& other) const;
+    int level; // level of CH
 
     friend std::ostream& operator<<(std::ostream& os, const Point& p);
 };
@@ -34,18 +43,26 @@ public:
 
     explicit Graph(const std::vector<Point>& points);
 
+    explicit Graph(const Graph* graph);
+
     std::vector<Point> id_point_map;
-    std::vector<std::vector<bool>> existance; // edge existance matrix for faster edge checks
+    std::unordered_set<std::pair<int, int>, pair_hash> existance; // to check if an edge exists
 
     int number_of_edges = 0;
+    std::vector<std::vector<std::tuple<int,int>>> forward_hub_labels; // forward hub labels for each node
+    std::vector<std::vector<std::tuple<int,int>>> backward_hub_labels; // backward hub labels for each node
 
     void addEdge(int u, int v, double w, bool undirected = true);
-    std::pair<std::vector<int>, double> dijkstra(int src, int dest);
+    std::pair<std::vector<int>, double> dijkstra(int src, int dest, double maximum=-1);
     std::vector<std::pair<std::vector<int>, double>> multiSourceMultiTargetDijkstra(
         const std::vector<int>& sources,
         const std::vector<int>& targets,
         bool all = false
     );
+
+    double hh_distance(int source, int target);
+
+    void init_hub_labels();
 
     double longestShortestPath(const std::vector<Point>& set, int source = -1);
 
@@ -58,7 +75,7 @@ public:
      * @param s the seperation constant, the two sets are well-separated if the distance between them is at least s times the maximum of the inner radii
      * @return
      */
-    std::vector<int> wspdCheck(std::vector<Point> &set1, std::vector<Point> &set2, double &set1_prec_dist, double &set2_prec_dist, double s=2);
+    std::tuple<std::vector<int>,double> wspdCheck(std::vector<Point> &set1, std::vector<Point> &set2, double &set1_prec_dist, double &set2_prec_dist, double s=2);
 
     int n;
     std::vector<std::vector<Edge>> adj;

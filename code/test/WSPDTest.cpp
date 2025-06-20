@@ -2,6 +2,7 @@
 #include "../src/Dataloader.hpp"
 #include "../src/Quadtree.hpp"
 #include "../src/ThetaSpanner.hpp"
+#include "../src/HubLabels.hpp"
 #include <ostream>
 #include <iostream>
 #include <set>
@@ -13,24 +14,36 @@
 
 using namespace std;
 
+/**
+ * floating point normalization to prevent floating point error missmatches
+ * @param value
+ * @return
+ */
+double normalize(double value) {
+    return std::round(value * 10000.0) / 10000.0;
+}
+
 
 
 int main() {
-    int theta = 4; // Number of zones
+    int theta = 8; // Number of zones
     double s = 2;
     bool using_wspd_e = true;
     bool using_wspd_spd = true;
     bool using_theta = true;
 
-    string path = "../../data/0025.32.fmi";
+    string path = "../../data/mini-ch.fmi";
 
     ///////////////////////////////////////////////////////////////////////////////////
     /// LOAD THE ORIGINAL GRAPH
     ///////////////////////////////////////////////////////////////////////////////////
     auto tup = load_fmi(path,  -1);
     auto systems = get<0>(tup);
+    auto used_points = vector<int>();
     Graph graph = get<1>(tup);
-    std::cout << "Loaded " << systems.size() << " systems." << std::endl;
+    // init the hub labels for faster shortest path distance calculation
+    graph.init_hub_labels();
+    std::cout << "Loaded " << systems.size() << " points." << std::endl;
 
     Graph spanner_e = Graph(graph.n);
     Graph spanner_sp = Graph(graph.n);
@@ -42,12 +55,14 @@ int main() {
     auto tree = new Quadtree(32);
     int counter = 0;
     std::cout << "Inserting systems into the quadtree..." << std::endl;
-    for (auto& system : systems) {
-        tree->insert(Point(system.x, system.y, counter));
-        counter++;
+    for (int p = 0; p < graph.adj.size(); p++) {
+        if (tree->insert(graph.id_point_map[p])) {
+            counter++;
+            used_points.push_back(p);
+        }
     }
     auto all_points = tree->get_all_points();
-    if (all_points.size() != systems.size()) {
+    if (all_points.size() != counter) {
         std::cout << "Error: Quadtree contains " << all_points.size() << " points, but expected " << systems.size() << "." << std::endl;
         raise(SIGINT); // Raise SIGINT to terminate the program
     }
@@ -60,41 +75,24 @@ int main() {
 
     if (using_wspd_e){
         auto start1 = std::chrono::high_resolution_clock::now();
-        auto result_e = wspd(tree, s);
+        spanner_e = wspd(tree, s, &graph);
         auto end1 = std::chrono::high_resolution_clock::now();
 
         std::cout << "wspd_e("<< s << ") took "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count()
-              << " ms. And created "<< result_e.size()
+              << " ms. And created "<< spanner_e.number_of_edges
               << " edges." << std::endl;
-        // Create a spanner graph from the result_e
-        spanner_e = Graph(graph.n);
-        for (const auto& pair : result_e) {
-            if (get<0>(pair) == get<1>(pair)) continue; // skip self-pairs
-            auto p1 = get<0>(pair);
-            auto p2 = get<1>(pair);
-            spanner_e.addEdge(p1.id, p2.id, euklidian_distance(p1,p2), true);
-        }
     }
 
     if (using_wspd_spd) {
         auto start2 = std::chrono::high_resolution_clock::now();
-        auto result_sp = wspd_spd(tree, s, graph);
+        spanner_sp = wspd_spd(tree, s, graph);
         auto end2 = std::chrono::high_resolution_clock::now();
 
         std::cout << "wspd_sp("<< s << ") took "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count()
-              << " ms. And created " << result_sp.size() << " edges." << std::endl;
+              << " ms. And created " << spanner_sp.number_of_edges << " edges." << std::endl;
         std::cout << "For   " << systems.size() << " nodes." << std::endl;
-
-        // Create a spanner graph from the result_sp
-        spanner_sp = Graph(graph.n);
-        for (const auto& pair : result_sp) {
-            if (get<0>(pair) == get<1>(pair)) continue; // skip self-pairs
-            auto p1 = get<0>(pair);
-            auto p2 = get<1>(pair);
-            spanner_sp.addEdge(p1.id, p2.id, euklidian_distance(p1,p2));
-        }
     }
 
     if (using_theta) {
@@ -131,8 +129,8 @@ int main() {
 
 
     for (int i = 0; i < number_of_tests; i++) {
-        int random_source = rand() % graph.n;
-        int random_target = rand() % graph.n;
+        int random_source = used_points[rand() % used_points.size()];
+        int random_target = used_points[rand() % used_points.size()];
         auto original_dist = graph.dijkstra(random_source, random_target).second;
 
         auto spanner_sp_dist = numeric_limits<double>::infinity();
@@ -147,16 +145,18 @@ int main() {
         if (spanner_e_dist == numeric_limits<double>::infinity()) {e_has_inf = true;}
         if (spanner_sp_dist == numeric_limits<double>::infinity()) {sp_has_inf = true;}
         if (spanner_theta_dist == numeric_limits<double>::infinity()) {t_has_inf = true;}
-        if (spanner_e_dist < original_dist) {
+        if (normalize(spanner_e_dist) < normalize(original_dist)) {
             e_has_neg_t = true;
         }
-        if (spanner_sp_dist < original_dist) {
+        if (normalize(spanner_sp_dist) < normalize(original_dist)) {
             sp_has_neg_t = true;
         }
-        if (spanner_theta_dist < original_dist) {theta_has_neg_t = true;}
-        if (spanner_e_dist/original_dist > e_max_t) {e_max_t = spanner_e_dist/original_dist;}
-        if (spanner_sp_dist/original_dist > sp_max_t) {sp_max_t = spanner_sp_dist/original_dist;}
-        if (spanner_theta_dist/original_dist > theta_max_t) {theta_max_t = spanner_theta_dist/original_dist;}
+        if (normalize(spanner_theta_dist) < normalize(original_dist)) {theta_has_neg_t = true;}
+        if (spanner_e_dist/original_dist > e_max_t && spanner_e_dist/original_dist < numeric_limits<double>::infinity()) {e_max_t = spanner_e_dist/original_dist;}
+        if (spanner_sp_dist/original_dist > sp_max_t && spanner_sp_dist/original_dist < numeric_limits<double>::infinity()) {
+            sp_max_t = spanner_sp_dist/original_dist;
+        }
+        if (spanner_theta_dist/original_dist > theta_max_t && spanner_theta_dist/original_dist < numeric_limits<double>::infinity()) {theta_max_t = spanner_theta_dist/original_dist;}
 
         sp_mean_t += spanner_sp_dist/original_dist;
         e_mean_t += spanner_e_dist/original_dist;
@@ -170,15 +170,23 @@ int main() {
                   << "Spanner Theta distance: " << spanner_theta_dist << std::endl;
 
     }
+    cout << "----------------------------------------------------------------------------------" << std::endl;
     std::cout << std::endl << "Results after " << number_of_tests << " tests:" << std::endl;
+    cout << "----------------------------------------------------------------------------------" << std::endl;
+    std::cout << "Spanner SPD has " << (using_wspd_spd ? "" : "not ") << "been used." << std::endl;
+    std::cout << "Spanner SPD has " << spanner_sp.number_of_edges << " Edges." << std::endl;
     std::cout << "Spanner SPD has infinity: " << (sp_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner SPD has negative t-value: " << (sp_has_neg_t ? "Yes" : "No") << std::endl;
     std::cout << "Spanner SPD max t-value: " << sp_max_t << std::endl;
-    std::cout << "Spanner SPD mean t-value: " << (sp_mean_t / number_of_tests) << std::endl;
+    std::cout << "Spanner SPD mean t-value: " << (sp_mean_t / number_of_tests) << std::endl << std::endl;
+    std::cout << "Spanner E has " << (using_wspd_e ? "" : "not ") << "been used." << std::endl;
+    std::cout << "Spanner E has " << spanner_e.number_of_edges << " Edges." << std::endl;
     std::cout << "Spanner E has infinity: " << (e_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner E has negative t-value: " << (e_has_neg_t ? "Yes" : "No") << std::endl;
     std::cout << "Spanner E max t-value: " << e_max_t << std::endl;
-    std::cout << "Spanner E mean t-value: " << (e_mean_t/ number_of_tests)<< std::endl;
+    std::cout << "Spanner E mean t-value: " << (e_mean_t/ number_of_tests)<< std::endl << std::endl;
+    std::cout << "Spanner Theta has " << (using_theta ? "" : "not ") << "been used." << std::endl;
+    std::cout << "Spanner Theta has " << spanner_theta.number_of_edges << " Edges." << std::endl;
     std::cout << "Spanner Theta has infinity: " << (t_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner Theta has negative t-value: " << (theta_has_neg_t ? "Yes" : "No") << std::endl;
     std::cout << "Spanner Theta max t-value: " << theta_max_t << std::endl;

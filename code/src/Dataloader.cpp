@@ -6,6 +6,8 @@
 #include <csignal>
 #include <iostream>
 #include <fstream>
+
+#include "Quadtree.hpp"
 #include "../lib/json.hpp"
 
 using json = nlohmann::json;
@@ -134,12 +136,14 @@ std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int l
         if (technical_counter == -2) {
             // First line contains the number of nodes and edges
             number_of_nodes = std::stoi(line);
+            cout << "The graph has " << number_of_nodes << " nodes\n>";
             technical_counter++;
             continue;
         }
         if (technical_counter == -1) {
             // Second line contains the number of edges
             number_of_edges = std::stoi(line);
+            cout << "The graph has " << number_of_edges << " edges\n>";
             technical_counter++;
             cout << "Loading Nodes \n>";
             continue;
@@ -155,8 +159,9 @@ std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int l
             std::string delimiter = " ";
 
             auto arr = split(line, delimiter);
-            // this creates the point. the data is in the format: id nonesense x y ...
-            systems.emplace_back(stoi(arr[0]), stod(arr[2]), stod(arr[3]));
+            // this creates the point. the data is in the format: id nonesense x y nonsense CH-level...
+            systems.emplace_back(stod(arr[2]), stod(arr[3]), stoi(arr[0]), stoi(arr[5]));
+            //systems.emplace_back(stod(arr[2]), stod(arr[3]), stoi(arr[0]), -1);
         } else {
             if (!with_edges) {
                 // If we are not loading edges, we can stop here
@@ -183,11 +188,16 @@ std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int l
                 g = Graph(systems);
                 graph_created = true;
             }
-            g.addEdge(stoi(arr[0]), stoi(arr[1]), stod(arr[2]), true);
+            int u_id = stoi(arr[0]);
+            int v_id = stoi(arr[1]);
+            Point u = g.id_point_map[u_id];
+            Point v = g.id_point_map[v_id];
+            double dist = euklidian_distance(u,v);
+            g.addEdge(u_id, v_id, dist, true);
         }
     }
 
-
+    cout << endl;
     return make_tuple(systems, g);
 }
 

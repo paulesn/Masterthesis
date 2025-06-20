@@ -63,5 +63,5 @@ generate_hub_labels(
     int max_threads =-1                                                  // limit the number of threads
     );
 
-
+int main2();
 #endif //HUBLABELS_H
