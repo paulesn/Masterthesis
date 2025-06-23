@@ -35,6 +35,20 @@ struct QuadtreeNode {
     [[nodiscard]] bool intercept_rect(double x, double y, double h) const;
     [[nodiscard]] std::string rec_string(int level = 0) const;
 
+    bool internal_angles_intersect(double source_x, double source_y, double angle_a, double angle_b) const;
+
+    /**
+     * this function returns all points that are in the area between two rays taking the source point as origin.
+     * and the rays are defined by the angles angle_a and angle_b. relative to the x-axis.
+     * between the two rays it is always assumed that angle_a > angle_b.
+     * @param source_x the x coordinate of the source point
+     * @param source_y the y coordinate of the source point
+     * @param angle_a the angle of the first ray
+     * @param angle_b the angle of the second ray
+     * @return a vector of node ids that are in the area between the two rays.
+     */
+    [[nodiscard]] std::vector<int> angle_intersect(double source_x, double source_y, double angle_a, double angle_b) const;
+
     [[nodiscard]] std::vector<Point> get_all_points() const;
 
     [[nodiscard]] bool contains(const Point & p) const;
@@ -51,6 +65,11 @@ struct Quadtree {
 
     explicit Quadtree(double height_ = 1);
     ~Quadtree() = default;
+
+    [[nodiscard]] std::vector<int> angle_intersect(double source_x, double source_y, double angle_a, double angle_b) const {
+        return root.angle_intersect(source_x, source_y, angle_a, angle_b);
+    }
+
 
     bool insert(Point p);
     void print() const;

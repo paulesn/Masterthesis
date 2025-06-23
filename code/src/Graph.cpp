@@ -254,7 +254,7 @@ void Graph::init_hub_labels() {
 
 }
 
-double Graph::hh_distance(int source, int target) {
+double Graph::hl_distance(int source, int target) {
     auto fl = forward_hub_labels[source];
     auto bl = backward_hub_labels[target];
     auto dist =  optimized_query(fl, bl);
@@ -279,7 +279,7 @@ double ::Graph::longestShortestPath(const vector<Point>& set, int source) {
     double max_dist = 0;
     int new_source = -1;
     for (const auto &p : set) {
-        double dist = hh_distance(source, p.id);
+        double dist = hl_distance(source, p.id);
         if (max_dist < dist) max_dist = dist;
         new_source = p.id;
     }
@@ -291,7 +291,7 @@ double ::Graph::longestShortestPath(const vector<Point>& set, int source) {
     // now we have the longest path distance, we can use it to find the maximum distance from the new source to all targets
     // which is the radius of the set
     for (const auto &p : set) {
-        double dist = hh_distance(new_source, p.id);
+        double dist = hl_distance(new_source, p.id);
         if (max_dist < dist) max_dist = dist;
         new_source = p.id;
     }

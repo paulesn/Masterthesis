@@ -96,13 +96,13 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
 }
 
 /**
- * This function loads a graph in the fmi format.
+ * This function loads a CH graph in the fmi format.
  * @param filepath the path to the fmi file
  * @param limit the maximum number of lines to read from the file, -1 for no limit only use if with_edges is false
  * @param with_edges if true, the function will also load the edges of the graph, otherwise it will only load the nodes
  * @return
  */
-std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int limit, bool with_edges) {
+std::tuple<std::vector<Point>,Graph> load_fmi_ch(const std::string &filepath, int limit, bool with_edges) {
     std::cout << "Loading fmi format from " << filepath << std::endl;
     std::vector<Point> systems; // id, x, y, z, jump multiplicator
 
@@ -198,6 +198,104 @@ std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int l
     }
 
     cout << endl;
+    return make_tuple(systems, g);
+}
+
+/**
+ * This function loads a graph in the fmi format.
+ * @param filepath the path to the fmi file
+ * @param limit the maximum number of lines to read from the file, -1 for no limit only use if with_edges is false
+ * @param with_edges if true, the function will also load the edges of the graph, otherwise it will only load the nodes
+ * @return
+ */
+std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int limit, bool with_edges) {
+    std::cout << "Loading fmi format from " << filepath << std::endl;
+    std::vector<Point> systems; // id, x, y, z, jump multiplicator
+
+    // print current working directory
+    std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << filepath << std::endl;
+        raise(SIGINT); // Raise SIGINT to terminate the program
+    }
+
+    int counter = 0;
+
+    int number_of_nodes = 0;
+    int number_of_edges = 0;
+    int technical_counter = -2;
+    Graph g = Graph(1);
+    bool graph_created = false;
+
+    for (std::string line; std::getline(file, line);) {
+        // update counter
+        counter++;
+
+        // Skip empty lines and comments
+        if (line.empty() || line[0] == '#') {
+            continue; // Skip empty lines
+        }
+        if (limit > 0 && counter >= limit) {
+            break;
+        }
+        if (technical_counter == -2) {
+            // First line contains the number of nodes and edges
+            number_of_nodes = std::stoi(line);
+            technical_counter++;
+            continue;
+        }
+        if (technical_counter == -1) {
+            // Second line contains the number of edges
+            number_of_edges = std::stoi(line);
+            technical_counter++;
+            cout << "Loading Nodes \n>";
+            continue;
+        }
+        if (technical_counter < number_of_nodes) {
+            if (number_of_nodes > 100 && technical_counter != 0 && counter % (number_of_nodes/100) == 0) {
+                std::cout << "|";
+                cout.flush();
+            }
+
+            // Read node data
+            technical_counter++;
+            std::string delimiter = " ";
+
+            auto arr = split(line, delimiter);
+            // this creates the point. the data is in the format: id nonesense x y ...
+            systems.emplace_back(stoi(arr[0]), stod(arr[2]), stod(arr[3]), -1);
+        } else {
+            if (!with_edges) {
+                // If we are not loading edges, we can stop here
+                std::cout << endl << "Skipping Edges\n>";
+                break;
+            }
+            if (technical_counter == number_of_nodes) {
+                // We have read all nodes
+                std::cout << endl << "Loading Edges\n>";
+            }
+            technical_counter++;
+            if (technical_counter >= number_of_nodes + number_of_edges) {
+                // We have read all nodes and edges
+                break;
+            }
+            if (number_of_nodes > 100 && number_of_edges > 100 && (counter-number_of_nodes) % (number_of_edges/100) == 0) {
+                std::cout << "|";
+                cout.flush();
+            }
+            // Read edge data
+            std::string delimiter = " ";
+            auto arr = split(line, delimiter);
+            if (!graph_created) {
+                g = Graph(systems);
+                graph_created = true;
+            }
+            g.addEdge(stoi(arr[0]), stoi(arr[1]), stod(arr[2]), true);
+        }
+    }
+
+
     return make_tuple(systems, g);
 }
 

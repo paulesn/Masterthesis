@@ -33,6 +33,10 @@ add_executable(GraphTest
         src/Graph.cpp
         src/Dataloader.cpp
         src/Dataloader.hpp
+        src/HubLabels.hpp
+        src/HubLabels.cpp
+        src/Quadtree.hpp
+        src/Quadtree.cpp
         test/GraphTest.cpp
 )
 
@@ -47,4 +51,5 @@ add_executable(Theta
 
 # Link OpenMP to your executable
 target_link_libraries(WSPDTest PRIVATE OpenMP::OpenMP_CXX)
+target_link_libraries(GraphTest PRIVATE OpenMP::OpenMP_CXX)
 

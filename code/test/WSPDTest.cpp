@@ -26,13 +26,13 @@ double normalize(double value) {
 
 
 int main() {
-    int theta = 8; // Number of zones
-    double s = 2;
+    int theta = 8; // Number of zones for theta spanner
+    double s = 4.5; // Separation factor for WSPD
     bool using_wspd_e = true;
-    bool using_wspd_spd = true;
+    bool using_wspd_spd = false;
     bool using_theta = true;
 
-    string path = "../../data/mini-ch.fmi";
+    string path = "../../data/0025.32.fmi";
 
     ///////////////////////////////////////////////////////////////////////////////////
     /// LOAD THE ORIGINAL GRAPH
@@ -42,7 +42,7 @@ int main() {
     auto used_points = vector<int>();
     Graph graph = get<1>(tup);
     // init the hub labels for faster shortest path distance calculation
-    graph.init_hub_labels();
+    //graph.init_hub_labels();
     std::cout << "Loaded " << systems.size() << " points." << std::endl;
 
     Graph spanner_e = Graph(graph.n);
@@ -107,7 +107,7 @@ int main() {
 
     if (using_theta) {
         auto start3 = std::chrono::high_resolution_clock::now();
-        spanner_theta = create_theta_spanner_graph(&graph, theta);
+        spanner_theta = create_theta_spanner_graph(&graph, theta, true, tree);
         auto end3 = std::chrono::high_resolution_clock::now();
 
         time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();

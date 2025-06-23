@@ -114,6 +114,90 @@ std::string QuadtreeNode::rec_string(const int level) const {
     return text;
 }
 
+double x_on_angle_ray(double x, double y, double theta, double y_new) {
+    double sin_theta = std::sin(theta);
+    double cos_theta = std::cos(theta);
+
+    if (std::abs(sin_theta) < 1e-10) {
+        // If sin(theta) is very small, the ray is nearly horizontal
+        if (std::abs(y_new - y) < 1e-10) {
+            return x; // No change in x, as the ray is horizontal
+        }
+        // If sin(theta) is zero, we cannot calculate a new x position
+        return std::numeric_limits<double>::infinity();
+    }
+
+    double t = (y_new - y) / sin_theta;
+    double x_new = x + t * cos_theta;
+
+    return x_new;
+}
+
+bool QuadtreeNode::internal_angles_intersect(double source_x, double source_y, double angle_a, double angle_b) const {
+    vector<Point> corners = {
+        Point(cX + height, cY + height),
+        Point(cX + height, cY - height),
+        Point(cX - height, cY + height),
+        Point(cX - height, cY - height)
+    };
+    // check if any corner of the quadtree node is in the area
+    for (Point corner :corners) {
+        // it is inside if it is smaller than the angle_a and larger than angle_b at the same y position
+        if (x_on_angle_ray(source_x, source_y, angle_a, corner.y)> corner.x) {
+            if (x_on_angle_ray(source_x, source_y, angle_b, corner.x)<corner.x) {
+                return true;
+            }
+        }
+    }
+    // if one point is above both rays and at least one point is below both rays, the angles intersect with the rectangle
+    bool one_is_above_a = false;
+    for (auto corner : corners) {
+        if (x_on_angle_ray(source_x, source_y, angle_a, corner.y) < corner.x) {
+            one_is_above_a = true;
+            break;
+        }
+    }
+    bool one_is_below_b = false;
+    for (auto corner : corners) {
+        if (x_on_angle_ray(source_x, source_y, angle_b, corner.y) > corner.x) {
+            one_is_below_b = true;
+        }
+    }
+    if (one_is_above_a && one_is_below_b) {
+        return true; // angles intersect with the rectangle
+    }
+    return false; // angles do not intersect with the rectangle
+}
+
+std::vector<int> QuadtreeNode::angle_intersect(double source_x, double source_y, double angle_a, double angle_b) const {
+    // Check if the angles are in the correct order
+    if (angle_a < angle_b) {
+        swap(angle_a, angle_b);
+    }
+    vector<int> result = {};
+    if (internal_angles_intersect(source_x, source_y, angle_a, angle_b)) {
+        for (auto child: {NW, NO, SW, SO}) {
+            if (child) {
+                // Check if the child node's area intersects with the angles
+                for (auto p: child->angle_intersect(source_x, source_y, angle_a, angle_b)) {
+                    result.push_back(p);
+                }
+            }
+        }
+    }
+    if (is_leaf) {
+        // If this is a leaf node, check if any of the points are in the area defined by the angles
+        for (const auto& p : points) {
+            double angle = std::atan2(p.y - source_y, p.x - source_x);
+            if (angle < 0) angle += 2 * M_PI; // Normalize angle to [0, 2π]
+            if (angle_a >= angle || angle <= angle_b) {
+                result.push_back(p.id);
+            }
+        }
+    }
+    return result;
+}
+
 vector<Point> QuadtreeNode::get_all_points() const {
     if (is_leaf) {
         return points;

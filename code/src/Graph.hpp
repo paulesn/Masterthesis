@@ -60,7 +60,7 @@ public:
         bool all = false
     );
 
-    double hh_distance(int source, int target);
+    double hl_distance(int source, int target);
 
     void init_hub_labels();
 
