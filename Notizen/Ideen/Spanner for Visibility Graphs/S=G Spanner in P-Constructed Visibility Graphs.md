@@ -11,7 +11,7 @@ Given the following point set with the red outlined visibility blocking polygons
 \usetikzlibrary{calc}
 \usetikzlibrary{through}
 
-\renewcommand{\max}{5}
+\renewcommand{\max}{11}
 \renewcommand{\a}{360/\max}
 \renewcommand{\b}{\a/2}
 \renewcommand{\c}{\b/2}
@@ -23,7 +23,7 @@ base/.style={fill, circle, inner sep=0pt,text width=3pt}
 
 \foreach \i in {1,...,\max}{
 	\node[base, blue] (\i) at (\i*\a:2) {};
-	\filldraw[gray] (\b + \i*\a:.5) -- (\b+\c+\i*\a:5) -- (\b-\c+\i*\a:5) --cycle;
+	\filldraw[gray] (\b + \i*\a:1.75) -- (\b+\c+\i*\a:5) -- (\b-\c+\i*\a:5) --cycle;
 }
 \end{tikzpicture}
 \end{document}
