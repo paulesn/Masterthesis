@@ -33,6 +33,7 @@ struct Edge {
     int target;
     double weight;
     Edge(const int source_, const int target_, const double weight_) : source(source_), target(target_), weight(weight_) {}
+    Edge() : source(-1), target(-1), weight(0.0) {}
     bool operator<(const Edge& other) const {return weight < other.weight;}
 };
 

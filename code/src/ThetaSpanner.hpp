@@ -8,11 +8,19 @@
 #include "Quadtree.hpp"
 
 /**
- *
- * @param graph the original graph
- * @param theta the number of edges to keep per node (number of zones)
- * @return
+ * This function creates a theta graph based on a input graph. The resulting graph only contains edges in the oroiginal graph
+ * @param graph the original graph the theta spanner should be based on
+ * @param theta the number of zones around each node for edges
+ * @return a new graph
  */
-Graph create_theta_spanner_graph(Graph* graph, const int theta, bool spd_fallback=false, Quadtree* quadtree= nullptr);
+Graph create_theta_spanner_graph(Graph* graph, const int theta);
+
+/**
+ * This function calculates the relative angle between the x axis and the vector from point a to point b.
+ * @param a
+ * @param b
+ * @return the angle in radians between the x-axis and the vector from a to b.
+ */
+double angle_between(Point a, Point b);
 
 #endif //THETASPANNER_H

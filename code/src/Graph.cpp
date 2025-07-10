@@ -69,22 +69,20 @@ void Graph::addEdge(int u, int v, double w, bool undirected) {
         cout << "Invalid node index: " << u << " or " << v << endl;
         raise(SIGINT);
     }
-    // Check if the edge already exists
+    // Check if the edge already exists // TODO remove
     if (existance.find({u, v}) != existance.end()) {
         return; // Edge already exists, do not add again
     }
 
     Edge e1 {u, v, w};
     auto &edges_u = adj[u];
-    auto it = lower_bound(edges_u.begin(), edges_u.end(), e1);
-    edges_u.insert(it, e1);
+    edges_u.emplace_back(e1); // this is not very efficant TODO
     existance.emplace(u, v);// Mark the edge as existing
 
     if (undirected) {
         Edge e2{v, u, w};
         auto &edges_v = adj[v];
-        it = lower_bound(edges_v.begin(), edges_v.end(), e2);
-        edges_v.insert(it, e2);
+        edges_v.emplace_back(e2);
         number_of_edges++;
     }
     number_of_edges++;

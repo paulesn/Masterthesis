@@ -192,7 +192,7 @@ std::tuple<std::vector<Point>,Graph> load_fmi_ch(const std::string &filepath, in
             int v_id = stoi(arr[1]);
             Point u = g.id_point_map[u_id];
             Point v = g.id_point_map[v_id];
-            double dist = euklidian_distance(u,v);
+            double dist = stod(arr[3]); //euklidian_distance(u,v);
             g.addEdge(u_id, v_id, dist, true);
         }
     }

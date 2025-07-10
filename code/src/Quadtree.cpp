@@ -1,4 +1,5 @@
 #include "Quadtree.hpp"
+#include "ThetaSpanner.hpp"
 
 #include <cassert>
 #include <chrono>
@@ -133,7 +134,7 @@ double x_on_angle_ray(double x, double y, double theta, double y_new) {
     return x_new;
 }
 
-bool QuadtreeNode::internal_angles_intersect(double source_x, double source_y, double angle_a, double angle_b) const {
+bool QuadtreeNode::internal_angles_intersect(Point source, double angle_a, double angle_b) const {
     vector<Point> corners = {
         Point(cX + height, cY + height),
         Point(cX + height, cY - height),
@@ -141,45 +142,36 @@ bool QuadtreeNode::internal_angles_intersect(double source_x, double source_y, d
         Point(cX - height, cY - height)
     };
     // check if any corner of the quadtree node is in the area
+    bool one_is_above_a = false;
+    bool one_is_below_b = false;
     for (Point corner :corners) {
         // it is inside if it is smaller than the angle_a and larger than angle_b at the same y position
-        if (x_on_angle_ray(source_x, source_y, angle_a, corner.y)> corner.x) {
-            if (x_on_angle_ray(source_x, source_y, angle_b, corner.x)<corner.x) {
-                return true;
-            }
+        auto angle_of_point = angle_between(source, corner);
+        if (angle_of_point < 0) angle_of_point += 2 * M_PI; // Normalize angle to [0, 2π]
+        if (angle_of_point >= angle_b && angle_of_point <= angle_a) {
+            return true; // at least one corner is in the area
         }
+        if (angle_of_point > angle_a) one_is_above_a = true;
+        if (angle_of_point < angle_b) one_is_below_b = true;
     }
     // if one point is above both rays and at least one point is below both rays, the angles intersect with the rectangle
-    bool one_is_above_a = false;
-    for (auto corner : corners) {
-        if (x_on_angle_ray(source_x, source_y, angle_a, corner.y) < corner.x) {
-            one_is_above_a = true;
-            break;
-        }
-    }
-    bool one_is_below_b = false;
-    for (auto corner : corners) {
-        if (x_on_angle_ray(source_x, source_y, angle_b, corner.y) > corner.x) {
-            one_is_below_b = true;
-        }
-    }
     if (one_is_above_a && one_is_below_b) {
         return true; // angles intersect with the rectangle
     }
     return false; // angles do not intersect with the rectangle
 }
 
-std::vector<int> QuadtreeNode::angle_intersect(double source_x, double source_y, double angle_a, double angle_b) const {
+std::vector<int> QuadtreeNode::angle_intersect(Point source, double angle_a, double angle_b) const {
     // Check if the angles are in the correct order
     if (angle_a < angle_b) {
         swap(angle_a, angle_b);
     }
     vector<int> result = {};
-    if (internal_angles_intersect(source_x, source_y, angle_a, angle_b)) {
+    if (internal_angles_intersect(source, angle_a, angle_b)) {
         for (auto child: {NW, NO, SW, SO}) {
             if (child) {
                 // Check if the child node's area intersects with the angles
-                for (auto p: child->angle_intersect(source_x, source_y, angle_a, angle_b)) {
+                for (auto p: child->angle_intersect(source, angle_a, angle_b)) {
                     result.push_back(p);
                 }
             }
@@ -188,7 +180,7 @@ std::vector<int> QuadtreeNode::angle_intersect(double source_x, double source_y,
     if (is_leaf) {
         // If this is a leaf node, check if any of the points are in the area defined by the angles
         for (const auto& p : points) {
-            double angle = std::atan2(p.y - source_y, p.x - source_x);
+            double angle = angle_between(source, p);
             if (angle < 0) angle += 2 * M_PI; // Normalize angle to [0, 2π]
             if (angle_a >= angle || angle <= angle_b) {
                 result.push_back(p.id);
@@ -241,6 +233,47 @@ bool QuadtreeNode::contains(const Point &p) const {
         }
         return false; // Point not found in this leaf
     }
+}
+
+std::vector<int> QuadtreeNode::circle_intersect(double x, double y, double r) const {
+    // check for each corner of the rectangle if it is inside the circle
+    bool point_inside = false;
+    for (const auto& corner : {
+        Point(cX + height, cY + height),
+        Point(cX + height, cY - height),
+        Point(cX - height, cY + height),
+        Point(cX - height, cY - height)
+    }) {
+        if (euklidian_distance(corner, Point(x, y)) <= r) {
+            point_inside = true;
+            break; // At least one corner is inside the circle
+        }
+    }
+    if (!point_inside) {
+        // we still have to check if the circle is completely inside the rectangle
+        if (x - r > cX + height || x + r < cX - height) return {}; // Circle is completely outside the rectangle in x direction
+    }
+
+    vector<int> result = {};
+    if (is_leaf) {
+        for (const auto& pt : points) {
+            if (euklidian_distance(pt, Point(x, y)) <= r) {
+                result.emplace_back(pt.id); // Return the id of the point if it is within the circle
+            }
+        }
+        return result; // Return the ids of points within the circle
+    }
+
+    auto vec = NW->circle_intersect(x, y, r);
+    result.insert(result.end(), vec.begin(), vec.end());
+    vec = NO->circle_intersect(x, y, r);
+    result.insert(result.end(), vec.begin(), vec.end());
+    vec = SW->circle_intersect(x, y, r);
+    result.insert(result.end(), vec.begin(), vec.end());
+    vec = SO->circle_intersect(x, y, r);
+    result.insert(result.end(), vec.begin(), vec.end());
+
+    return result; // Return the ids of points within the circle from all children
 }
 
 void QuadtreeNode::insertInternal(Point s) {

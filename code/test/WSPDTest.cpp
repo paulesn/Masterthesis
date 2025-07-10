@@ -2,7 +2,7 @@
 #include "../src/Dataloader.hpp"
 #include "../src/Quadtree.hpp"
 #include "../src/ThetaSpanner.hpp"
-#include "../src/HubLabels.hpp"
+#include "../src/DataWriter.h"
 #include <ostream>
 #include <iostream>
 #include <set>
@@ -26,13 +26,14 @@ double normalize(double value) {
 
 
 int main() {
-    int theta = 8; // Number of zones for theta spanner
+    int theta = 50; // Number of zones for theta spanner
     double s = 4.5; // Separation factor for WSPD
     bool using_wspd_e = true;
     bool using_wspd_spd = false;
     bool using_theta = true;
 
-    string path = "../../data/0025.32.fmi";
+    string path = "../../data/0100.32.fmi";
+    string out_path = "../../data/theta_spanner.gl";
 
     ///////////////////////////////////////////////////////////////////////////////////
     /// LOAD THE ORIGINAL GRAPH
@@ -107,7 +108,7 @@ int main() {
 
     if (using_theta) {
         auto start3 = std::chrono::high_resolution_clock::now();
-        spanner_theta = create_theta_spanner_graph(&graph, theta, true, tree);
+        spanner_theta = create_theta_spanner_graph(&graph, theta);
         auto end3 = std::chrono::high_resolution_clock::now();
 
         time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();
@@ -125,7 +126,7 @@ int main() {
     /// analyse t-value
     ///////////////////////////////////////////////////////////////////////////////////
 
-    constexpr int number_of_tests = 50;
+    constexpr int number_of_tests =100;
     bool e_has_inf = false;
     bool sp_has_inf = false;
     bool t_has_inf = false;
@@ -140,6 +141,7 @@ int main() {
     bool theta_has_neg_t = false;
 
 
+    // RANDOM PATH TESTING
     for (int i = 0; i < number_of_tests; i++) {
         int random_source = used_points[rand() % used_points.size()];
         int random_target = used_points[rand() % used_points.size()];
@@ -182,8 +184,37 @@ int main() {
                   << "Spanner Theta distance: " << spanner_theta_dist << std::endl;
 
     }
+
+    int c2 = 0;
+    double spanner_theta_max_t = 0.0;
+    cout << ">";
+    // ALL EDGES TEST
+    for (int i=0; i<= graph.n; i++) {
+        if (graph.n > 100 && (c2) % (graph.n/100) == 0) {
+            std::cout << "|";
+            cout.flush();
+        }
+        c2++;
+
+        if (false){
+            for (auto edge: graph.adj[i]) {
+                auto orginal_dist = edge.weight;
+                auto spanner_theta_dist = numeric_limits<double>::infinity();
+                if (using_theta) {
+                    spanner_theta_dist = spanner_theta.dijkstra(i, edge.target).second;
+                    spanner_theta_max_t = spanner_theta_dist / orginal_dist;
+                    if (spanner_theta_dist == numeric_limits<double>::infinity()) {t_has_inf = true;}
+                    if (spanner_theta_dist > spanner_theta_max_t) spanner_theta_max_t = spanner_theta_dist;
+                }
+            }
+        }
+    }
+
+    cout << std::endl;
+
     cout << "----------------------------------------------------------------------------------" << std::endl;
-    std::cout << std::endl << "Results after " << number_of_tests << " tests:" << std::endl;
+    std::
+    cout << std::endl << "Results after " << number_of_tests << " tests:" << std::endl;
     cout << "----------------------------------------------------------------------------------" << std::endl;
     std::cout << "Spanner SPD has " << (using_wspd_spd ? "" : "not ") << "been used." << std::endl;
     std::cout << "Spanner SPD has " << spanner_sp.number_of_edges << " Edges." << std::endl;
@@ -197,7 +228,7 @@ int main() {
     std::cout << "Spanner E has been calculated in " << time_e << " ms." << std::endl;
     std::cout << "Spanner E has infinity: " << (e_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner E has negative t-value: " << (e_has_neg_t ? "Yes" : "No") << std::endl;
-    std::cout << "Spanner E max t-value: " << e_max_t << std::endl;
+    std::cout << "Spanner E max t-value (in random tests): " << e_max_t << std::endl;
     std::cout << "Spanner E mean t-value: " << (e_mean_t/ number_of_tests)<< std::endl << std::endl;
     std::cout << "Spanner Theta has " << (using_theta ? "" : "not ") << "been used." << std::endl;
     std::cout << "Spanner Theta has " << spanner_theta.number_of_edges << " Edges." << std::endl;
@@ -208,6 +239,8 @@ int main() {
     std::cout << "Spanner Theta mean t-value: " << (theta_mean_t / number_of_tests) << std::endl;
     std::cout << "All tests completed." << std::endl;
 
+    write_gf(spanner_theta, out_path);
 }
 
+// TODO auch die worst case edge ausrechnen
 

@@ -8,25 +8,74 @@
 #include <unordered_set>
 #include "Graph.hpp" // You may want to replace this with Graph.hpp if possible
 
-// Hash function for Point
+/**
+ * Hash function for Point
+ * for use in unordered_set
+ */
 struct PointHash {
     std::size_t operator()(const Point& p) const;
 };
 
-// Euclidean distance between two points
+/**
+ * Euclidean distance between two points
+ */
 double euklidian_distance(Point a, Point b);
 
-// Node of the Quadtree
+/**
+ * Node of the Quadtree with defind 4 or 0 children
+ */
 struct QuadtreeNode {
+    /**
+     * A list of points in this cell. This list is never cleared so that each cell knows all points that were inserted into it.
+     * TODO evaluate if this is necessary, maybe we can just use the points in the leaf nodes.
+     */
     std::vector<Point> points;
+    /**
+     * The position and size information of the node.
+     * cX and cY are the center coordinates of the node, height is half the width/height of the node;
+     * Effectivly the distance from the center to any edge.
+     */
     double cX, cY, height;
+    /**
+    * The four children of the node, if it is not a leaf.
+    * NW = North-West, NO = North-East, SW = South-West, SO = South-East (derived from German)
+    * The children are nullptr if the node is a leaf.
+    *
+    */
     QuadtreeNode *NW, *NO, *SW, *SO;
+
+    /**
+     * The information if the node is a leaf or not. True == no children, false == has children.
+     */
     bool is_leaf;
+    /**
+     * Pointer to the parent node, if needed. This is useful for traversing back up the tree.
+     * It is used, for example, in nearest neighbor search or when calculating the well-separated pair decomposition (WSPD).
+     */
     QuadtreeNode *parent = nullptr; // Pointer to the parent node, if needed
+
+    /**
+     * The longest shortest path between any two points in this node.
+     * this is calculated on demand and is used for the WSPD with shortest path distance.
+     * It is stored here to avoid recalculating it multiple times.
+     */
     double inner_sp_distance = -1; // Used for WSPD with shortest path distance
 
-    QuadtreeNode(double cX_, double cY_, double height_, QuadtreeNode* parent);
+    /**
+     * "Default" constructor for a QuadtreeNode.
+     * @param cX_ center of the new node in x direction
+     * @param cY_ center of the new node in y direction
+     * @param height_ height of the root node, which is half the width/height of the node
+     * @param parent optional pointer to the parent node, default is nullptr
+     */
+    QuadtreeNode(double cX_, double cY_, double height_, QuadtreeNode* parent=nullptr);
+
+    /**
+     * Copy constructor for a QuadtreeNode.
+     * @param other the QuadtreeNode to copy from. As the children are pointers, they are copied as well but reference still the old children.
+     */
     QuadtreeNode(const QuadtreeNode& other);
+    
     QuadtreeNode& operator=(const QuadtreeNode& other);
     ~QuadtreeNode();
 
@@ -34,8 +83,15 @@ struct QuadtreeNode {
     [[nodiscard]] bool area_contains(Point s) const;
     [[nodiscard]] bool intercept_rect(double x, double y, double h) const;
     [[nodiscard]] std::string rec_string(int level = 0) const;
+    std::vector<int> angle_intersect(Point source, double angle_a, double angle_b) const;
 
-    bool internal_angles_intersect(double source_x, double source_y, double angle_a, double angle_b) const;
+    [[nodiscard]] std::vector<Point> get_all_points() const;
+
+    [[nodiscard]] bool contains(const Point & p) const;
+
+    std::vector<int> circle_intersect(double x, double y, double r) const;
+
+private:
 
     /**
      * this function returns all points that are in the area between two rays taking the source point as origin.
@@ -47,13 +103,8 @@ struct QuadtreeNode {
      * @param angle_b the angle of the second ray
      * @return a vector of node ids that are in the area between the two rays.
      */
-    [[nodiscard]] std::vector<int> angle_intersect(double source_x, double source_y, double angle_a, double angle_b) const;
+    bool internal_angles_intersect(Point source, double angle_a, double angle_b) const ;
 
-    [[nodiscard]] std::vector<Point> get_all_points() const;
-
-    [[nodiscard]] bool contains(const Point & p) const;
-
-private:
     void insertInternal(Point s);
 };
 
@@ -66,8 +117,8 @@ struct Quadtree {
     explicit Quadtree(double height_ = 1);
     ~Quadtree() = default;
 
-    [[nodiscard]] std::vector<int> angle_intersect(double source_x, double source_y, double angle_a, double angle_b) const {
-        return root.angle_intersect(source_x, source_y, angle_a, angle_b);
+std::vector<int> angle_intersect(Point source, double angle_a, double angle_b) const {
+        return root.angle_intersect(source, angle_a, angle_b);
     }
 
 
@@ -75,6 +126,9 @@ struct Quadtree {
     void print() const;
     std::vector<Point> get_all_points() const;
     bool contains(Point p) const{return root.contains(p);}
+
+
+    std::vector<int> circle_intersect(double x, double y, double r) const {return root.circle_intersect(x,y,r);}
 };
 
 // Normalize the ordering of two QuadtreeNodes
@@ -85,6 +139,7 @@ Graph wspd(const Quadtree* tree, double s, Graph* g);
 
 // WSPD using shortest-path distances from the Graph
 Graph wspd_spd(const Quadtree* tree, double s, Graph g);
+
 
 
 #endif // QUADTREE_HPP
