@@ -14,10 +14,10 @@
               "type": "pdf",
               "state": {
                 "file": "Related Work/Approximation Algorithm for Motion Planning.pdf",
-                "page": 4,
-                "left": -11,
-                "top": 60,
-                "zoom": 1.6172638436482085
+                "page": 1,
+                "left": -9,
+                "top": 796,
+                "zoom": 1.6176470588235294
               },
               "icon": "lucide-file-text",
               "title": "Approximation Algorithm for Motion Planning"
@@ -29,15 +29,16 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Related Work/Notes on Spanners.md",
+                "file": "Ideen/Theta Graphen/Untitled.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Notes on Spanners"
+              "title": "Untitled"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -110,7 +111,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Related Work/Approximation Algorithm for Motion Planning.pdf",
+                "file": "Ideen/Theta Graphen/Untitled.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -120,7 +121,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Approximation Algorithm for Motion Planning"
+              "title": "Backlinks for Untitled"
             }
           },
           {
@@ -190,9 +191,10 @@
       "pdf-plus:PDF++: Toggle auto-paste": false
     }
   },
-  "active": "e60c7ca023ccbb53",
+  "active": "60e049b23e61f7e1",
   "lastOpenFiles": [
     "Related Work/Notes on Spanners.md",
+    "Ideen/Theta Graphen/Untitled.md",
     "Related Work/Approximation Algorithm for Motion Planning.pdf",
     "Ideen/Theta Graphen/Gegenbeweis Theta Spanner.md",
     "Ideen/Spanner for Visibility Graphs/n 2 Proof v2.md",

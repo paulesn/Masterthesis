@@ -10,6 +10,7 @@
 #include <unordered_set>
 
 #include "HubLabels.hpp"
+#include "Quadtree.hpp"
 
 using namespace std;
 
@@ -112,7 +113,7 @@ pair<vector<int>, double> Graph::dijkstra(int src, int dest, double maximum) {
         if (u == dest) break;  // Stop early if we reached destination
         if (maximum >= 0 && d > maximum) {
             // If we have a maximum distance and the current distance exceeds it, stop
-            return {{}, maximum};
+            return {{}, INF};
         }
 
         for (auto &edge : adj[u]) {
@@ -372,4 +373,14 @@ std::tuple<std::vector<int>,double> Graph::wspdCheck(std::vector<Point> &set1, s
         return {ret_path, dist}; // TODO maybe this is uneccesary repacking
     }
     return std::make_tuple(std::vector<int>{}, std::numeric_limits<double>::infinity()); // No path found
+}
+
+void Graph::attach_lone_points() {
+    for (int i=0; i<this->adj.size();i++){
+        auto list = this->adj[i];
+        if (list.empty()){
+            Edge edge = Edge(i, i-1, euklidian_distance(this->id_point_map[i], this->id_point_map[i-1]));
+            this->adj[i].emplace_back(edge);
+        }
+    }
 }

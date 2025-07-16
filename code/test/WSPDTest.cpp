@@ -26,13 +26,13 @@ double normalize(double value) {
 
 
 int main() {
-    int theta = 50; // Number of zones for theta spanner
+    int theta = 24; // Number of zones for theta spanner
     double s = 4.5; // Separation factor for WSPD
     bool using_wspd_e = true;
     bool using_wspd_spd = false;
     bool using_theta = true;
 
-    string path = "../../data/0100.32.fmi";
+    string path = "../../data/0200.32.fmi";
     string out_path = "../../data/theta_spanner.gl";
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +42,7 @@ int main() {
     auto systems = get<0>(tup);
     auto used_points = vector<int>();
     Graph graph = get<1>(tup);
+    graph.attach_lone_points();
     // init the hub labels for faster shortest path distance calculation
     //graph.init_hub_labels();
     std::cout << "Loaded " << systems.size() << " points." << std::endl;
@@ -109,6 +110,7 @@ int main() {
     if (using_theta) {
         auto start3 = std::chrono::high_resolution_clock::now();
         spanner_theta = create_theta_spanner_graph(&graph, theta);
+        dynamic_theta_update(&graph, &spanner_theta, 1.1);
         auto end3 = std::chrono::high_resolution_clock::now();
 
         time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();
@@ -126,7 +128,7 @@ int main() {
     /// analyse t-value
     ///////////////////////////////////////////////////////////////////////////////////
 
-    constexpr int number_of_tests =100;
+    constexpr int number_of_tests = 5000;
     bool e_has_inf = false;
     bool sp_has_inf = false;
     bool t_has_inf = false;
@@ -144,7 +146,12 @@ int main() {
     // RANDOM PATH TESTING
     for (int i = 0; i < number_of_tests; i++) {
         int random_source = used_points[rand() % used_points.size()];
-        int random_target = used_points[rand() % used_points.size()];
+        int num_targets = graph.adj[random_source].size();
+        if (num_targets == 0) {
+            std::cout << "No targets for source " << random_source << ". Skipping test." << std::endl;
+            continue; // Skip if no targets are available
+        }
+        int random_target = graph.adj[random_source][rand() % num_targets].target;
         auto original_dist = graph.dijkstra(random_source, random_target).second;
 
         auto spanner_sp_dist = numeric_limits<double>::infinity();
@@ -176,13 +183,14 @@ int main() {
         e_mean_t += spanner_e_dist/original_dist;
         theta_mean_t += spanner_theta_dist/original_dist;
 
+        /**
         std::cout << "Test " << i + 1
                   << " (" << random_source << " -> " << random_target << "): "
                   << "Original distance: " << original_dist << ", "
                   << "Spanner SPD distance: " << spanner_sp_dist << ", "
                   << "Spanner E distance: " << spanner_e_dist << std::endl
                   << "Spanner Theta distance: " << spanner_theta_dist << std::endl;
-
+*/
     }
 
     int c2 = 0;
@@ -210,6 +218,11 @@ int main() {
         }
     }
 
+    int noe = 0;
+    for (int i = 0; i < graph.adj.size(); i++) {
+        noe += spanner_theta.adj[i].size();
+    }
+
     cout << std::endl;
 
     cout << "----------------------------------------------------------------------------------" << std::endl;
@@ -231,7 +244,7 @@ int main() {
     std::cout << "Spanner E max t-value (in random tests): " << e_max_t << std::endl;
     std::cout << "Spanner E mean t-value: " << (e_mean_t/ number_of_tests)<< std::endl << std::endl;
     std::cout << "Spanner Theta has " << (using_theta ? "" : "not ") << "been used." << std::endl;
-    std::cout << "Spanner Theta has " << spanner_theta.number_of_edges << " Edges." << std::endl;
+    std::cout << "Spanner Theta has " << noe << " Edges." << std::endl;
     std::cout << "Spanner Theta has been calculated in " << time_t << " ms." << std::endl;
     std::cout << "Spanner Theta has infinity: " << (t_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner Theta has negative t-value: " << (theta_has_neg_t ? "Yes" : "No") << std::endl;

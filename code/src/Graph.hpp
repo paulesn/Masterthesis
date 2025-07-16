@@ -80,6 +80,8 @@ public:
 
     int n;
     std::vector<std::vector<Edge>> adj;
+
+    void attach_lone_points();
 };
 
 #endif // GRAPH_HPP

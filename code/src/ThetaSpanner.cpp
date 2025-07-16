@@ -4,9 +4,12 @@
 #include "ThetaSpanner.hpp"
 #include "Dataloader.hpp"
 #include <cmath>
+#include <csignal>
+
 #include "Graph.hpp"
 #include "Quadtree.hpp"
 # include <omp.h>
+#include <queue>
 #include <vector>
 
 
@@ -24,6 +27,12 @@ double angle_between(Point a, Point b) {
     }
     return angle; // angle in radians
 }
+
+struct EdgeWeightCompare {
+    bool operator()(const Edge& a, const Edge& b) const {
+        return a.weight > b.weight; // min heap: smallest weight first
+    }
+};
 
 Graph create_theta_spanner_graph(Graph* graph, const int theta) {
     Graph spanner (graph->id_point_map);
@@ -76,5 +85,66 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
     std::cout << "Created theta spanner graph with " << fallback_counter << " fallbacks." << std::endl;
 
     return spanner;
+}
+
+void dynamic_theta_update(Graph *graph, Graph* spanner, double t) {
+
+    /*
+     *In this variant of the dynamic theta update, we iterate over nodes instead of edges.
+     *this potentially increases the number of edges in the spanner graph, but it is more efficient, because we can use a multiple target djikstra
+     *
+     */
+
+    // min heap for the edges in the graph
+    std::priority_queue<Edge, std::vector<Edge>, EdgeWeightCompare> minHeap;
+    for (int i = 0; i < graph->adj.size(); i++) {
+        for (const auto &edge : graph->adj[i]) {
+            minHeap.push(edge);
+        }
+    }
+
+    int counter = 0;
+    std::cout << "Updating theta spanner graph with " << t << " zones." << std::endl <<">";
+    int number_of_added_edges = 0;
+
+    for (auto edge_list: graph->adj) {
+        // print progress
+        if (graph->adj.size() > 100 && counter % (graph->adj.size()/100) == 0) {
+            std::cout << "|";
+            std::cout.flush();
+        }
+        counter++;
+        std::vector<int> targets = {};
+        std::vector<int> source = {edge_list[0].source}; // get the source node id
+        for (const auto &edge : edge_list) {
+            targets.push_back(edge.target);
+        }
+        // calculate the shortest path from the source to all targets
+        auto distances_graph = graph->multiSourceMultiTargetDijkstra(source, targets, true);
+        auto distances_spanner = spanner->multiSourceMultiTargetDijkstra(source, targets, true);
+
+        //validate the distances
+        for (int i = 0; i< distances_graph.size(); i++) {
+            double true_dist = distances_graph[i].second;
+            double spanner_dist = std::numeric_limits<double>::infinity();
+            int target = distances_graph[i].first.back();
+            // TODO fix this is quadratic
+            for (auto dist : distances_spanner) {
+                if (dist.first.back() == target) {
+                    spanner_dist = dist.second;
+                    break;
+                }
+            }
+
+
+            if (spanner_dist > t * true_dist) {
+                // add the edge to the spanner graph
+                spanner->addEdge(edge_list[0].source, distances_graph[i].first.back(), true_dist);
+                number_of_added_edges++;
+            }
+        }
+    }
+    std::cout << std::endl;
+    std::cout << "Updated theta spanner graph with " << number_of_added_edges << " new edges." << std::endl;
 }
 
