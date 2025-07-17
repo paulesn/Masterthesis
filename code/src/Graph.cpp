@@ -63,7 +63,7 @@ Graph::Graph(const Graph *graph) {
  * @param w weight of the edge
  * @param undirected
  */
-void Graph::addEdge(int u, int v, double w, bool undirected) {
+bool Graph::addEdge(int u, int v, double w, bool undirected) {
     undirected = true; // TODO remove
     if (u > v) std::swap(u, v); // Ensure u is always less than v for consistent edge representation
     if (u < 0 || u >= n || v < 0 || v >= n) {
@@ -72,7 +72,7 @@ void Graph::addEdge(int u, int v, double w, bool undirected) {
     }
     // Check if the edge already exists // TODO remove
     if (existance.find({u, v}) != existance.end()) {
-        return; // Edge already exists, do not add again
+        return false; // Edge already exists, do not add again
     }
 
     Edge e1 {u, v, w};
@@ -87,6 +87,7 @@ void Graph::addEdge(int u, int v, double w, bool undirected) {
         number_of_edges++;
     }
     number_of_edges++;
+    return true; // Edge added successfully
 }
 
 /**

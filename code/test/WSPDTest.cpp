@@ -32,7 +32,7 @@ int main() {
     bool using_wspd_spd = false;
     bool using_theta = true;
 
-    string path = "../../data/0200.32.fmi";
+    string path = "../../data/0025.32.fmi";
     string out_path = "../../data/theta_spanner.gl";
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +110,9 @@ int main() {
     if (using_theta) {
         auto start3 = std::chrono::high_resolution_clock::now();
         spanner_theta = create_theta_spanner_graph(&graph, theta);
+        std::cout << "Created theta spanner graph with " << spanner_theta.number_of_edges << " edges." << std::endl;
         dynamic_theta_update(&graph, &spanner_theta, 1.1);
+        std::cout << "Updated theta spanner graph with 1.1 zones. and has " << spanner_theta.number_of_edges << std::endl;
         auto end3 = std::chrono::high_resolution_clock::now();
 
         time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();

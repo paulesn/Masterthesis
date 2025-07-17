@@ -5,7 +5,7 @@
 #include "Dataloader.hpp"
 #include <cmath>
 #include <csignal>
-
+#include <algorithm>
 #include "Graph.hpp"
 #include "Quadtree.hpp"
 # include <omp.h>
@@ -87,7 +87,7 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
     return spanner;
 }
 
-void dynamic_theta_update(Graph *graph, Graph* spanner, double t) {
+void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
 
     /*
      *In this variant of the dynamic theta update, we iterate over nodes instead of edges.
@@ -95,56 +95,58 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, double t) {
      *
      */
 
-    // min heap for the edges in the graph
-    std::priority_queue<Edge, std::vector<Edge>, EdgeWeightCompare> minHeap;
-    for (int i = 0; i < graph->adj.size(); i++) {
-        for (const auto &edge : graph->adj[i]) {
-            minHeap.push(edge);
-        }
-    }
 
     int counter = 0;
     std::cout << "Updating theta spanner graph with " << t << " zones." << std::endl <<">";
     int number_of_added_edges = 0;
+    int edge_existing = 0;
+    int edge_not_existing = 0;
 
-    for (auto edge_list: graph->adj) {
+    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+
+    #pragma omp parallel for num_threads(num_threads) shared(number_of_added_edges, edge_existing, edge_not_existing, counter, graph, spanner, t) schedule(dynamic)
+    for (auto edge_list: spanner->adj) {
         // print progress
         if (graph->adj.size() > 100 && counter % (graph->adj.size()/100) == 0) {
             std::cout << "|";
             std::cout.flush();
         }
         counter++;
-        std::vector<int> targets = {};
-        std::vector<int> source = {edge_list[0].source}; // get the source node id
-        for (const auto &edge : edge_list) {
-            targets.push_back(edge.target);
-        }
-        // calculate the shortest path from the source to all targets
-        auto distances_graph = graph->multiSourceMultiTargetDijkstra(source, targets, true);
-        auto distances_spanner = spanner->multiSourceMultiTargetDijkstra(source, targets, true);
 
-        //validate the distances
-        for (int i = 0; i< distances_graph.size(); i++) {
-            double true_dist = distances_graph[i].second;
-            double spanner_dist = std::numeric_limits<double>::infinity();
-            int target = distances_graph[i].first.back();
-            // TODO fix this is quadratic
-            for (auto dist : distances_spanner) {
-                if (dist.first.back() == target) {
-                    spanner_dist = dist.second;
-                    break;
+
+        // Assuming you have access to the source Point for the edges
+        std::sort(edge_list.begin(), edge_list.end(), [&](const Edge& a, const Edge& b) {
+            Point source = spanner->id_point_map[a.source];
+            double angle_a = angle_between(source, graph->id_point_map[a.target]);
+            double angle_b = angle_between(source, graph->id_point_map[b.target]);
+            return angle_a < angle_b;
+        });
+
+        // for each edge in the edge list, we identify the edge in the next zone
+        for (int i = 0; i < edge_list.size(); i++) {
+            auto edge = edge_list[i];
+            auto edge2 = edge_list[(i + 1) % edge_list.size()]; // next edge in the list, wraps around
+            if (edge.target == edge2.target) continue; // skip self-comparison
+
+            // then we identify the distance between the ends of the two edges
+            // check if the distance between the two edges is smaller than the two edges times t
+            auto p1 = graph->id_point_map[edge.target];
+            auto p2 = graph->id_point_map[edge2.target];
+            if (euklidian_distance(p1, p2) > t*(edge.weight + edge2.weight)) {
+                // if this distance is smaller than the two edges times the value t, we add the direct edge to the spanner graph
+                if (!spanner->addEdge(edge.source, edge2.target, edge.weight + edge2.weight)) {
+                    // if the edge already exists, we skip it
+                    edge_existing++;
+                } else {
+                    edge_not_existing++;
                 }
-            }
-
-
-            if (spanner_dist > t * true_dist) {
-                // add the edge to the spanner graph
-                spanner->addEdge(edge_list[0].source, distances_graph[i].first.back(), true_dist);
                 number_of_added_edges++;
             }
         }
     }
     std::cout << std::endl;
     std::cout << "Updated theta spanner graph with " << number_of_added_edges << " new edges." << std::endl;
+    std::cout << "Existing edges: " << edge_existing << ", Not existing edges: " << edge_not_existing << std::endl;
+    std::cout << "Total edges in spanner graph: " << spanner->number_of_edges << std::endl;
 }
 

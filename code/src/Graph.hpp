@@ -53,7 +53,7 @@ public:
     std::vector<std::vector<std::tuple<int,int>>> forward_hub_labels; // forward hub labels for each node
     std::vector<std::vector<std::tuple<int,int>>> backward_hub_labels; // backward hub labels for each node
 
-    void addEdge(int u, int v, double w, bool undirected = true);
+    bool addEdge(int u, int v, double w, bool undirected = true);
     std::pair<std::vector<int>, double> dijkstra(int src, int dest, double maximum=-1);
     std::vector<std::pair<std::vector<int>, double>> multiSourceMultiTargetDijkstra(
         const std::vector<int>& sources,
