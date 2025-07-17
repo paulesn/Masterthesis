@@ -87,7 +87,7 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
     return spanner;
 }
 
-void dynamic_theta_update(Graph *graph, Graph* spanner, double t) {
+void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
 
     /*
      *In this variant of the dynamic theta update, we iterate over nodes instead of edges.
@@ -95,18 +95,14 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, double t) {
      *
      */
 
-    // min heap for the edges in the graph
-    std::priority_queue<Edge, std::vector<Edge>, EdgeWeightCompare> minHeap;
-    for (int i = 0; i < graph->adj.size(); i++) {
-        for (const auto &edge : graph->adj[i]) {
-            minHeap.push(edge);
-        }
-    }
-
     int counter = 0;
     std::cout << "Updating theta spanner graph with " << t << " zones." << std::endl <<">";
+    std::vector<std::pair<int, int>> new_edges = {};
     int number_of_added_edges = 0;
 
+    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+
+    #pragma omp parallel for num_threads(num_threads) shared(number_of_added_edges, counter, graph, spanner, t) schedule(dynamic)
     for (auto edge_list: graph->adj) {
         // print progress
         if (graph->adj.size() > 100 && counter % (graph->adj.size()/100) == 0) {
@@ -139,11 +135,21 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, double t) {
 
             if (spanner_dist > t * true_dist) {
                 // add the edge to the spanner graph
+                #pragma omp critical
                 spanner->addEdge(edge_list[0].source, distances_graph[i].first.back(), true_dist);
+                //#pragma omp critical
+                //new_edges.emplace_back(edge_list[0].source, distances_graph[i].first.back());
                 number_of_added_edges++;
             }
         }
     }
+
+    std::cout << "inserting the new edges into the spanner graph." << std::endl;
+    for (auto & edge : new_edges) {
+        // add the edge to the spanner graph
+        spanner->addEdge(edge.first, edge.second, euklidian_distance(graph->id_point_map[edge.first], graph->id_point_map[edge.second]));
+    }
+
     std::cout << std::endl;
     std::cout << "Updated theta spanner graph with " << number_of_added_edges << " new edges." << std::endl;
 }

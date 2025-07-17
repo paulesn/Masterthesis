@@ -565,6 +565,7 @@ saK
 siFm
 sSbZf
 sYOP
+sebastian
 and
 an
 all
@@ -1212,6 +1213,8 @@ tKCn
 tQmO
 tpF
 taken
+took
+tests
 we
 with
 want
@@ -1458,6 +1461,7 @@ wfgG
 wzw
 wzp
 wFm
+working
 draw
 defined
 distance
@@ -1763,6 +1767,9 @@ dfb
 dgA
 dpA
 desired
+debug
+directory
+duplicate
 edge
 edges
 each
@@ -2051,6 +2058,7 @@ ecN
 eQr
 exM
 ensures
+exit
 from
 found
 for
@@ -2337,6 +2345,9 @@ fff
 faO
 follows
 family
+fmi
+fallbacks
+finished
 We
 With
 While
@@ -2566,6 +2577,7 @@ WDP
 WWlDts
 WlU
 WSQ
+WSPDTest
 choose
 closest
 condition
@@ -2908,6 +2920,9 @@ cone
 critical
 collectiou
 convex
+code
+cmake
+completed
 longest
 list
 length
@@ -3544,6 +3559,8 @@ iXV
 ixA
 include
 ich
+inf
+inserting
 our
 on
 of
@@ -4087,6 +4104,8 @@ phDN
 present
 polytopcs
 polytops
+primitiven
+parallel
 midpoint
 most
 more
@@ -4392,6 +4411,7 @@ mXa
 mxi
 mWY
 mBx
+mean
 replace
 range
 represented
@@ -5829,6 +5849,7 @@ Shv
 Shown
 Such
 Spanning
+Skipped
 by
 becomes
 between
@@ -6080,6 +6101,7 @@ bTk
 brv
 bxL
 boundary
+been
 Points
 Proof
 Purpose
@@ -6332,6 +6354,9 @@ PcT
 PCHr
 PaPa
 PEM
+Point
+Process
+Parallel
 know
 known
 kd
@@ -6834,6 +6859,7 @@ hCT
 hXA
 hDDg
 habe
+home
 The
 Therefore
 Then
@@ -7544,6 +7570,8 @@ LFa
 LPL
 LTF
 LTlRi
+Loading
+Loaded
 Each
 EtNgqSCW
 EDSM
@@ -8013,6 +8041,7 @@ vINnJY
 vAD
 visible
 verstanden
+vergleichen
 For
 Formal
 Factor
@@ -8268,6 +8297,7 @@ Fopt
 FRf
 Folv
 Figure
+Funktion
 As
 Algorithm
 Add
@@ -8831,6 +8861,8 @@ IDmS
 IgT
 Iom
 IGo
+Inserting
+Inserted
 Neither
 Network
 Note
@@ -9056,6 +9088,7 @@ NDXoYqVh
 NDp
 NeL
 NBjA
+Nodes
 yes
 you
 yr
@@ -9574,6 +9607,9 @@ CbCj
 CiBCLZ
 CWak
 CUqw
+Current
+Creating
+Created
 Optimization
 Oy
 OQ
@@ -9810,6 +9846,8 @@ OPL
 OmHd
 OcMb
 OKU
+Original
+OMP
 Definition
 Does
 Dijkstra
@@ -10083,6 +10121,8 @@ DQD
 Dkqc
 Dwu
 Den
+Documents
+Dauer
 Here
 Handwritten
 Hph
@@ -10770,6 +10810,7 @@ qJa
 qUiSNY
 qWE
 qHy
+quadtree
 But
 Build
 BK
@@ -12172,6 +12213,7 @@ MiBE
 MXi
 MHw
 MST
+Masterthesis
 YE
 YN
 Ya
@@ -12382,6 +12424,7 @@ YNG
 YNZ
 Yju
 Yao
+Yes
 QT
 QM
 QD
@@ -13050,6 +13093,7 @@ zyBh
 zkj
 zuam
 zmo
+zones
 UJ
 Ui
 Using
@@ -13277,6 +13321,8 @@ UmtUIqeft
 UJR
 USU
 UoN
+Updating
+Updated
 äX
 üQF
 üO
@@ -13290,6 +13336,7 @@ UoN
 Üw
 Üf
 ÜA
+Übersicht
 ßR
 ßb
 ßq
