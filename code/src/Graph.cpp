@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <chrono>
 #include <csignal>
+#include <fstream>
 #include <iostream>
 #include <unordered_set>
 
@@ -63,8 +64,7 @@ Graph::Graph(const Graph *graph) {
  * @param w weight of the edge
  * @param undirected
  */
-void Graph::addEdge(int u, int v, double w, bool undirected) {
-    undirected = true; // TODO remove
+void Graph::addEdge(int u, int v, double w) {
     if (u > v) std::swap(u, v); // Ensure u is always less than v for consistent edge representation
     if (u < 0 || u >= n || v < 0 || v >= n) {
         cout << "Invalid node index: " << u << " or " << v << endl;
@@ -80,12 +80,11 @@ void Graph::addEdge(int u, int v, double w, bool undirected) {
     edges_u.emplace_back(e1); // this is not very efficant TODO
     existance.emplace(u, v);// Mark the edge as existing
 
-    if (undirected) {
-        Edge e2{v, u, w};
-        auto &edges_v = adj[v];
-        edges_v.emplace_back(e2);
-        number_of_edges++;
-    }
+    // As the graph is undirected, we also add the inverse direction
+    Edge e2{v, u, w};
+    auto &edges_v = adj[v];
+    edges_v.emplace_back(e2);
+
     number_of_edges++;
 }
 
@@ -103,18 +102,20 @@ pair<vector<int>, double> Graph::dijkstra(int src, int dest, double maximum) {
 
     // Min-heap priority queue: (distance, node)
     using NodeDist = pair<double, int>;
-    priority_queue<NodeDist, vector<NodeDist>, greater<NodeDist>> pq;
-    pq.push({0.0, src});
+    priority_queue<NodeDist, vector<NodeDist>, greater<>> pq;
+    pq.emplace(0.0, src);
 
     while (!pq.empty()) {
         auto [d, u] = pq.top();
         pq.pop();
         if (d > dist[u]) continue;
         if (u == dest) break;  // Stop early if we reached destination
+
         if (maximum >= 0 && d > maximum) {
             // If we have a maximum distance and the current distance exceeds it, stop
             return {{}, INF};
         }
+
 
         for (auto &edge : adj[u]) {
             int v = edge.target;
@@ -164,7 +165,7 @@ vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
 
     // Min-heap priority queue: (distance, node)
     using NodeDist = pair<double, int>;
-    priority_queue<NodeDist, vector<NodeDist>, greater<NodeDist>> pq;
+    priority_queue<NodeDist, vector<NodeDist>, greater<>> pq;
 
     for (int src : sources) {
         if (src >= 0 && src < n) {
@@ -210,49 +211,6 @@ vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
     return results;
 }
 
-void Graph::init_hub_labels() {
-    vector<vector<int>> levels;
-    // generate upwards edges
-    std::vector<std::vector<std::tuple<int,int>>> upwards_edges (n);
-    for (int u = 0; u < n; ++u) {
-        // add to the levels vector
-        Point* u_point = &id_point_map[u];
-        if (u_point->level < 0) {
-            cout << "Node " << u << " has no level assigned, cannot generate hub labels." << endl;
-            raise(SIGINT); // Raise SIGINT to terminate the program
-        }
-        if (levels.size() <= u_point->level) {
-            levels.resize(u_point->level + 1, {});
-        }
-        levels[u_point->level].push_back(u);
-        for (const auto &edge : adj[u]) {
-            int v = edge.target;
-            Point* v_point = &id_point_map[v];
-            if (v_point->level > u_point->level) { // Only consider edges going upwards in the order
-                upwards_edges[u].emplace_back(v, edge.weight);
-            }
-        }
-    }
-    // generate downwards edges
-    std::vector<std::vector<std::tuple<int,int>>> downwards_edges (n);
-    for (int u = 0; u < n; ++u) {
-        for (const auto &edge : adj[u]) {
-            int v = edge.target;
-            Point* u_point = &id_point_map[u];
-            Point* v_point = &id_point_map[v];
-            if (v_point->level < u_point->level) { // Only consider edges going downwards in the order
-                downwards_edges[u].emplace_back(v, edge.weight);
-            }
-        }
-    }
-    // call hublabel generator
-    auto hub_labels = generate_hub_labels(levels, upwards_edges, downwards_edges, 1);
-    // store hub labels in a suitable data structure
-    forward_hub_labels = std::get<0>(hub_labels);
-    backward_hub_labels = std::get<1>(hub_labels);
-
-}
-
 double Graph::hl_distance(int source, int target) {
     auto fl = forward_hub_labels[source];
     auto bl = backward_hub_labels[target];
@@ -260,120 +218,6 @@ double Graph::hl_distance(int source, int target) {
     return get<1>(dist);
 }
 
-
-double ::Graph::longestShortestPath(const vector<Point>& set, int source) {
-    // check trivial cases
-    if (set.empty()) {
-        //cout << "Set is empty, cannot calculate longest shortest path." << endl;
-        return 0.0;
-    }
-    if (set.size() == 1) {
-        //cout << "Set has only one point, cannot calculate longest shortest path." << endl;
-        return 0.0; // No valid path to calculate
-    }
-    // set default source
-    if (source==-1) source = set[0].id; // Use the first point as source if not specified
-
-
-    double max_dist = 0;
-    int new_source = -1;
-    for (const auto &p : set) {
-        double dist = hl_distance(source, p.id);
-        if (max_dist < dist) max_dist = dist;
-        new_source = p.id;
-    }
-    if (new_source == -1) {
-        cout << "No valid source found in the set." << endl;
-        raise(SIGINT); // Raise SIGINT to terminate the program
-    }
-
-    // now we have the longest path distance, we can use it to find the maximum distance from the new source to all targets
-    // which is the radius of the set
-    for (const auto &p : set) {
-        double dist = hl_distance(new_source, p.id);
-        if (max_dist < dist) max_dist = dist;
-        new_source = p.id;
-    }
-    if (new_source == -1) {
-        cout << "No valid source found in the set." << endl;
-        raise(SIGINT); // Raise SIGINT to terminate the program
-    }
-    return max_dist; // Return the maximum distance found
-}
-
-/**
- *
- * @return if two sets of nodes are well-separated by using the shortest path distance.
- */
-std::tuple<std::vector<int>,double> Graph::wspdCheck(std::vector<Point> &set1, std::vector<Point> &set2, double& set1_prec_dist, double& set2_prec_dist, double s) {
-
-    if (set1.empty() || set2.empty()) {
-        //cout << "One of the sets is empty, cannot calculate WSPD." << endl;
-        return {}; // Return empty path if one of the sets is empty
-    }
-
-    // check if all indicies are in the graph if not, return 0.0
-    for (const auto p : set1) {
-        if (p.id < 0 || p.id >= n) {
-            cout << "Invalid node index in set1: " << p.id << endl;
-            raise (SIGINT); // Raise SIGINT to terminate the program
-        }
-    }
-    for (const auto p : set2) {
-        if (p.id < 0 || p.id >= n) {
-            cout << "Invalid node index in set1: " << p.id << endl;
-            raise (SIGINT); // Raise SIGINT to terminate the program
-        }
-    }
-
-    // calculate the shortest longest path for both sets
-    double rad1 = (set1_prec_dist==-1) ? longestShortestPath(set1) : set1_prec_dist;
-    set1_prec_dist = rad1;
-    double rad2 = (set2_prec_dist==-1) ? longestShortestPath(set2) : set2_prec_dist;
-    set2_prec_dist = rad2;
-
-    // calculate the distance between the two sets using multi-source multi-target Dijkstra
-    vector<int> sources;
-    vector<int> targets;
-    for (const auto &p : set1) {
-        if (p.id >= 0 && p.id < n) {
-            sources.push_back(p.id);
-        } else {
-            cout << "Invalid node index in set1: " << p.id << endl;
-            raise(SIGINT); // Raise SIGINT to terminate the program
-        }
-    }
-    for (const auto &p : set2) {
-        if (p.id >= 0 && p.id < n) {
-            targets.push_back(p.id);
-        } else {
-            cout << "Invalid node index in set2: " << p.id << endl;
-            raise(SIGINT); // Raise SIGINT to terminate the program
-        }
-    }
-    auto distances = multiSourceMultiTargetDijkstra(
-        sources, targets, true
-    );
-    if (distances.empty()) {
-        cout << "No path found between the two sets." << endl;
-        return std::make_tuple(std::vector<int>{}, std::numeric_limits<double>::infinity()); // No path found
-    }
-    double dist = distances[0].second; // Get the distance from the first source to the first target
-    vector<int> ret_path = distances[0].first;
-    for (auto &result : distances) {
-        auto &path = result.first;
-        double d = result.second;
-        if (d < dist) {
-            dist = d; // Find the minimum distance
-            ret_path = result.first; // Update the path
-        }
-    }
-
-    if (dist >= s * max(rad1, rad2)) {
-        return {ret_path, dist}; // TODO maybe this is uneccesary repacking
-    }
-    return std::make_tuple(std::vector<int>{}, std::numeric_limits<double>::infinity()); // No path found
-}
 
 void Graph::attach_lone_points() {
     for (int i=0; i<this->adj.size();i++){
@@ -383,4 +227,18 @@ void Graph::attach_lone_points() {
             this->adj[i].emplace_back(edge);
         }
     }
+}
+
+void Graph::store_to_disk(const std::string &path) const {
+    auto out = std::ofstream(path);
+    out << "#\n#\n#\n#\n \n" << n << "\n" << number_of_edges << "\n";
+    for (const auto &point : id_point_map) {
+        out << point.id << " 0 " <<  point.x << " " << point.y << " 0 \n";
+    }
+    for (auto edge_list : adj) {
+        for (const auto &edge : edge_list) {
+            out << edge.source << " " << edge.target << " " << edge.weight << " 0 0 .\n";
+        }
+    }
+    out.close();
 }

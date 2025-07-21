@@ -100,55 +100,41 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
     std::vector<std::pair<int, int>> new_edges = {};
     int number_of_added_edges = 0;
 
-    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+    auto pq = std::priority_queue<Edge, std::vector<Edge>, EdgeWeightCompare>();
+    // initialize the priority queue with the edges of the graph
+    for (int i = 0; i < graph->adj.size(); i++) {
+        for (const Edge& edge : graph->adj[i]) {
+            pq.push(edge);
+        }
+    }
 
-    #pragma omp parallel for num_threads(num_threads) shared(number_of_added_edges, counter, graph, spanner, t) schedule(dynamic)
-    for (auto edge_list: graph->adj) {
+    const int number_edges = pq.size();
+
+    //iterate through all edges
+    for (int i = 0; i < number_edges; i++) {
+        counter++;
+
         // print progress
-        if (graph->adj.size() > 100 && counter % (graph->adj.size()/100) == 0) {
+        if (number_edges > 100 && counter % (number_edges/100) == 0) {
             std::cout << "|";
             std::cout.flush();
         }
-        counter++;
-        std::vector<int> targets = {};
-        std::vector<int> source = {edge_list[0].source}; // get the source node id
-        for (const auto &edge : edge_list) {
-            targets.push_back(edge.target);
-        }
-        // calculate the shortest path from the source to all targets
-        auto distances_graph = graph->multiSourceMultiTargetDijkstra(source, targets, true);
-        auto distances_spanner = spanner->multiSourceMultiTargetDijkstra(source, targets, true);
 
-        //validate the distances
-        for (int i = 0; i< distances_graph.size(); i++) {
-            double true_dist = distances_graph[i].second;
-            double spanner_dist = std::numeric_limits<double>::infinity();
-            int target = distances_graph[i].first.back();
-            // TODO fix this is quadratic
-            for (auto dist : distances_spanner) {
-                if (dist.first.back() == target) {
-                    spanner_dist = dist.second;
-                    break;
-                }
-            }
+        auto edge = pq.top();
+        pq.pop();
+        auto source = graph->id_point_map[edge.source];
+        auto target = graph->id_point_map[edge.target];
 
-
-            if (spanner_dist > t * true_dist) {
-                // add the edge to the spanner graph
-                #pragma omp critical
-                spanner->addEdge(edge_list[0].source, distances_graph[i].first.back(), true_dist);
-                //#pragma omp critical
-                //new_edges.emplace_back(edge_list[0].source, distances_graph[i].first.back());
-                number_of_added_edges++;
-            }
+        // path in the spanner graph
+        auto path = spanner->dijkstra(edge.source, edge.target, edge.weight);
+        if (path.second > edge.weight * t) {
+            new_edges.emplace_back(edge.source, edge.target);
+            number_of_added_edges++;
+            spanner->addEdge(edge.source, edge.target, edge.weight);
+            continue;
         }
     }
 
-    std::cout << "inserting the new edges into the spanner graph." << std::endl;
-    for (auto & edge : new_edges) {
-        // add the edge to the spanner graph
-        spanner->addEdge(edge.first, edge.second, euklidian_distance(graph->id_point_map[edge.first], graph->id_point_map[edge.second]));
-    }
 
     std::cout << std::endl;
     std::cout << "Updated theta spanner graph with " << number_of_added_edges << " new edges." << std::endl;

@@ -53,7 +53,7 @@ public:
     std::vector<std::vector<std::tuple<int,int>>> forward_hub_labels; // forward hub labels for each node
     std::vector<std::vector<std::tuple<int,int>>> backward_hub_labels; // backward hub labels for each node
 
-    void addEdge(int u, int v, double w, bool undirected = true);
+    void addEdge(int u, int v, double w);
     std::pair<std::vector<int>, double> dijkstra(int src, int dest, double maximum=-1);
     std::vector<std::pair<std::vector<int>, double>> multiSourceMultiTargetDijkstra(
         const std::vector<int>& sources,
@@ -63,25 +63,12 @@ public:
 
     double hl_distance(int source, int target);
 
-    void init_hub_labels();
-
-    double longestShortestPath(const std::vector<Point>& set, int source = -1);
-
-    /**
-     *
-     * @param set1 a set of points in the graph
-     * @param set1_prec_dist the inner radius of the set in shortest paht distance -1 if not known
-     * @param set2 another set of points in the graph
-     * @param set2_prec_dist the inner radius of the set in shortest path distance -1 if not known
-     * @param s the seperation constant, the two sets are well-separated if the distance between them is at least s times the maximum of the inner radii
-     * @return
-     */
-    std::tuple<std::vector<int>,double> wspdCheck(std::vector<Point> &set1, std::vector<Point> &set2, double &set1_prec_dist, double &set2_prec_dist, double s=2);
-
     int n;
     std::vector<std::vector<Edge>> adj;
 
     void attach_lone_points();
+
+    void store_to_disk(const std::string& path) const;
 };
 
 #endif // GRAPH_HPP
