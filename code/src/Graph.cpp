@@ -17,7 +17,7 @@ using namespace std;
 
 
 
-Point::Point(const double x_, const double y_, int level_): x(x_), y(y_), id(-1), level(level_) {}
+Point::Point(const double x_, const double y_): x(x_), y(y_), id(-1), level(0) {}
 
 Point::Point(const double x_, const double y_, const int id_, int level_): x(x_), y(y_), id(id_), level(level_) {}
 
