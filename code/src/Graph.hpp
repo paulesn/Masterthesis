@@ -69,6 +69,8 @@ public:
     void attach_lone_points();
 
     void store_to_disk(const std::string& path) const;
+
+    void draw();
 };
 
 #endif // GRAPH_HPP

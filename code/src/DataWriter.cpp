@@ -7,6 +7,15 @@
 
 #include <fstream>
 #include <iostream>
+#include <math.h>
+
+WGS84Coordinates pointInWGS84(Point p) {
+    double lon = (p.x / 20037508.34) * 180;
+    double lat = (p.y / 20037508.34) * 180;
+
+    lat = 180 / M_PI * (2 * atan(exp(lat * M_PI / 180)) - M_PI / 2);
+    return std::make_pair(lat, lon);
+}
 
 int write_gf(const Graph& g, std::string path) {
     // Open file with default mode: out | trunc (creates file if it doesn't exist, overwrites if it does)
@@ -37,25 +46,35 @@ int write_gf(const Graph& g, std::string path) {
     }
 
     outFile << g.n << std::endl;
-    outFile << (g.number_of_edges/2)-1 << std::endl;
+    outFile << (g.number_of_edges) << std::endl;
+    int counter_nodes = 0;
     for (const auto& point : g.id_point_map) {
+        counter_nodes++;
 
-        double coord_x = (point.x+(-1*min_x)) * mod_x;
-        double coord_y = (point.y+(-1*min_y)) * mod_y;
+        auto wgs84 = pointInWGS84(point);
 
-        outFile << point.id << " " << coord_x << " " << coord_y  << std::endl;
+        double coord_x = wgs84.first;
+        double coord_y = wgs84.second;
+
+        outFile << coord_x << " " << coord_y  << std::endl;
     }
     int counter = 0;
+    int max_idx = 0;
     for (int u = 0; u < g.n; ++u) {
         for (const auto& edge : g.adj[u]) {
             if (edge.target > u) { // Avoid duplicate edges in undirected graph
-                outFile << counter << " " << u << " " << edge.target << " " << "1 1" << std::endl; // the last two numbers are line thikness and color
+                outFile << u << " " << edge.target << " " << "1 1" << std::endl; // the last two numbers are line thikness and color
                 counter++;
+                if (edge.target > max_idx) {
+                    max_idx = edge.target;
+                }
+                if (u > max_idx) {
+                    max_idx = u;
+                }
             }
         }
     }
-
+    std::cout << counter_nodes << " " << max_idx << std::endl;
     outFile.close();
-    std::cout << counter << " vs " << (g.number_of_edges/2)-1;
     return 0;
 }

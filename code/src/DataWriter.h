@@ -8,6 +8,8 @@
 #include "Graph.hpp"
 #include <fstream>
 #include <iostream>
+
+typedef std::pair<double, double> WGS84Coordinates;
 /**
  * Writes the graph to a file in a format that can be read by the simple graph renderer.
  * The file will contain the number of nodes, the number of edges, and the edges themselves.
@@ -16,5 +18,7 @@
  * @return 0 on success, 1 on failure
  */
 int write_gf(const Graph& g, std::string path);
+
+WGS84Coordinates pointInWGS84(Point p);
 
 #endif //DATAWRITER_H

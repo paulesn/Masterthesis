@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find and link OpenMP
 find_package(OpenMP REQUIRED)
+find_package(SFML COMPONENTS Graphics Window System REQUIRED)
 
 # Optional: add include directory if your headers are separated
 # include_directories(include)
@@ -78,9 +79,17 @@ add_executable(ThetaSpannerTest
 )
 
 
-# Link OpenMP to your executable
+# Link OpenMP
 target_link_libraries(WSPDTest PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(sizeTest PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(GraphTest PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(ThetaSpannerTest PRIVATE OpenMP::OpenMP_CXX)
+
+# Link  SFML
+target_link_libraries(WSPDTest
+        PRIVATE
+        sfml-graphics
+        sfml-window
+        sfml-system
+)
 

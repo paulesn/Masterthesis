@@ -9,6 +9,9 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_set>
+#include <oneapi/tbb/task_arena.h>
+
+#include <SFML/Graphics.hpp>
 
 #include "HubLabels.hpp"
 #include "Quadtree.hpp"
@@ -241,4 +244,36 @@ void Graph::store_to_disk(const std::string &path) const {
         }
     }
     out.close();
+}
+
+void Graph::draw(){
+    sf::RenderWindow window(
+        sf::VideoMode(sf::Vector2u(800, 800), 600),
+        "Graph Viewer"
+    );
+    window.setFramerateLimit(60);
+
+    sf::View view = window.getDefaultView();
+    bool dragging = false;
+    sf::Vector2i lastMousePos;
+
+    // 2) Build a single VertexArray for all edges
+    sf::VertexArray edges(sf::PrimitiveType::Lines, number_of_edges * 2);
+    int i = 0;
+    for (const auto& edgeList : adj) {
+        for (const auto& edge : edgeList) {
+            edges[2*i].position   = {static_cast<float>(id_point_map[edge.source].x), static_cast<float>(id_point_map[edge.source].y)};
+            edges[2*i+1].position = {static_cast<float>(id_point_map[edge.target].x), static_cast<float>(id_point_map[edge.target].y)};;
+            // Optional: set color for each vertex
+            edges[2*i].color   = sf::Color::White;
+            edges[2*i+1].color = sf::Color::White;
+        }
+    }
+
+    cout << "Drawing graph with " << n << " nodes and " << number_of_edges << " edges." << endl;
+    window.setView(view);
+    window.clear(sf::Color::Black);
+    window.draw(edges);
+    window.display();
+    while (window.isOpen()) {}
 }
