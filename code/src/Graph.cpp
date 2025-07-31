@@ -11,8 +11,6 @@
 #include <unordered_set>
 #include <oneapi/tbb/task_arena.h>
 
-#include <SFML/Graphics.hpp>
-
 #include "HubLabels.hpp"
 #include "Quadtree.hpp"
 
@@ -147,6 +145,63 @@ pair<vector<int>, double> Graph::dijkstra(int src, int dest, double maximum) {
     return {path, dist[dest]};
 }
 
+using NodeDist = pair<double, Edge>;
+bool q_comp(NodeDist a, NodeDist b) {
+    return a.first > b.first;
+}
+
+double Graph::spira_sp(int src, int dest, double maximum) {
+    const double INF = numeric_limits<double>::infinity();
+    vector<double> dist(n, INF);
+    vector<int> idx(n, 0);
+    vector<int> prev(n, -1);
+    dist[src] = 0.0;
+
+    // Min-heap priority queue: (distance, node)
+
+priority_queue<NodeDist, vector<NodeDist>, decltype(&q_comp)> pq(q_comp);
+
+    // add the smallest edge in the list
+    pq.emplace(adj[src][0].weight, adj[src][0]);
+    idx[src] = 0;
+    // iterate
+    while (!pq.empty()) {
+
+        auto [d, e] = pq.top();
+        pq.pop();
+
+        int c_src = e.source;
+        int c_target = e.target;
+        //std::cout << "----------------------------------------------------------------------" << endl;
+        //std::cout << "exploring edge: (" << c_src << " - " << c_target <<")" << std::endl;
+        //std::cout << c_src << "has " << adj[c_src].size() << " edges. This is edge Nr. " << idx[c_src] << std::endl;
+
+        // update distance if shorter
+        if (d < dist[c_target]) {
+            dist[c_target] = d;
+            prev[c_target] = c_src;
+        }
+
+        if (c_target == dest) {
+            return d;
+        }
+
+        // add the next edge if exists
+        if (idx[c_src] < adj[c_src].size()) {
+            Edge n_edge = adj[c_src][idx[c_src]++];
+            pq.emplace(dist[n_edge.source] + n_edge.weight, n_edge);
+            //std::cout << "Adding edge (" << n_edge.source << " - " << n_edge.target << "| " << d+ n_edge.weight <<")" << std::endl;
+        }
+
+        if (idx[c_target] < adj[c_target].size()) {
+            Edge n_edge = adj[c_target][idx[c_target]++];
+            pq.emplace(dist[n_edge.source] + n_edge.weight, n_edge);
+            //std::cout << "Adding edge(" << n_edge.source << " - " << n_edge.target << "| " << d+ n_edge.weight <<")" << std::endl;
+        }
+    }
+    return dist[dest];
+}
+
 vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
     const vector<int>& sources,
     const vector<int>& targets,
@@ -244,36 +299,4 @@ void Graph::store_to_disk(const std::string &path) const {
         }
     }
     out.close();
-}
-
-void Graph::draw(){
-    sf::RenderWindow window(
-        sf::VideoMode(sf::Vector2u(800, 800), 600),
-        "Graph Viewer"
-    );
-    window.setFramerateLimit(60);
-
-    sf::View view = window.getDefaultView();
-    bool dragging = false;
-    sf::Vector2i lastMousePos;
-
-    // 2) Build a single VertexArray for all edges
-    sf::VertexArray edges(sf::PrimitiveType::Lines, number_of_edges * 2);
-    int i = 0;
-    for (const auto& edgeList : adj) {
-        for (const auto& edge : edgeList) {
-            edges[2*i].position   = {static_cast<float>(id_point_map[edge.source].x), static_cast<float>(id_point_map[edge.source].y)};
-            edges[2*i+1].position = {static_cast<float>(id_point_map[edge.target].x), static_cast<float>(id_point_map[edge.target].y)};;
-            // Optional: set color for each vertex
-            edges[2*i].color   = sf::Color::White;
-            edges[2*i+1].color = sf::Color::White;
-        }
-    }
-
-    cout << "Drawing graph with " << n << " nodes and " << number_of_edges << " edges." << endl;
-    window.setView(view);
-    window.clear(sf::Color::Black);
-    window.draw(edges);
-    window.display();
-    while (window.isOpen()) {}
 }

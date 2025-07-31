@@ -15,7 +15,7 @@
  */
 Graph create_theta_spanner_graph(Graph* graph, const int theta);
 
-void dynamic_theta_update(Graph* graph, Graph* spanner, const double t);
+void dynamic_theta_update(Graph* graph, Graph* spanner, const double t, double early_stop=1);
 
 /**
  * This function calculates the relative angle between the x axis and the vector from point a to point b.

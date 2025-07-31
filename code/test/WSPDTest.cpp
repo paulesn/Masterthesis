@@ -28,11 +28,12 @@ double normalize(double value) {
 int main() {
     int theta = 24; // Number of zones for theta spanner
     double s = 4.5; // Separation factor for WSPD
+    double t_target = 1.4;
     bool using_wspd_e = true;
     bool using_wspd_spd = false;
     bool using_theta = true;
 
-    string path = "../../data/0200.32.fmi";
+    string path = "../../data/0025.32.fmi";
     string out_path = "../../data/theta_spanner.gl";
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +81,7 @@ int main() {
     if (using_theta) {
         auto start3 = std::chrono::high_resolution_clock::now();
         spanner_theta = create_theta_spanner_graph(&graph, theta);
-        //dynamic_theta_update(&graph, &spanner_theta, 1.1);
+        dynamic_theta_update(&graph, &spanner_theta, t_target);
         auto end3 = std::chrono::high_resolution_clock::now();
 
         time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();
@@ -98,18 +99,10 @@ int main() {
     /// analyse t-value
     ///////////////////////////////////////////////////////////////////////////////////
 
-    constexpr int number_of_tests = 500;
-    bool e_has_inf = false;
-    bool sp_has_inf = false;
+    constexpr int number_of_tests = 50000;
     bool t_has_inf = false;
-    double e_max_t = 0.0;
-    double sp_max_t = 0.0;
     double theta_max_t = 0.0;
-    double e_mean_t = 0.0;
-    double sp_mean_t = 0.0;
     double theta_mean_t = 0.0;
-    bool e_has_neg_t = false;
-    bool sp_has_neg_t = false;
     bool theta_has_neg_t = false;
 
 

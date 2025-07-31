@@ -1,88 +1,81 @@
 #include <cassert>
+#include <chrono>
 #include <iostream>
 #include <limits>
 
 #include "../src/Graph.hpp"
 #include "../src/Dataloader.hpp"
 
+using namespace std;
+
 void testGraph() {
-    // Test initialization with larger graph
-    Graph graph(25);
 
-    // Add edges to create a more complex graph
-    for (int i = 0; i < 24; ++i) {
-        graph.addEdge(i, i + 1, 1.0 + (i % 3), true);
-    }
-    graph.addEdge(0, 5, 2.5, true);
-    graph.addEdge(4, 10, 1.5, true);
-    graph.addEdge(6, 15, 3.0, true);
-    graph.addEdge(8, 20, 2.0, true);
-
-    // Dijkstra basic test with larger graph
-    auto result = graph.dijkstra(0, 20);
-    assert(result.second > 0);
-    assert(!result.first.empty());
-
-    // Dijkstra unreachable test
-    Graph isolatedGraph(30);
-    isolatedGraph.addEdge(0, 1, 1.0, false);
-    result = isolatedGraph.dijkstra(29, 0);
-    assert(result.second == std::numeric_limits<double>::infinity());
-    assert(result.first.empty());
-
-    // Multi-source multi-target test
-    std::vector<int> sources = {0, 5, 10};
-    std::vector<int> targets = {15, 20, 24};
-    auto multi_result = graph.multiSourceMultiTargetDijkstra(sources, targets, true);
-    assert(multi_result.size() == 3);
-
-    // Test longestShortestPath
-    std::vector<Point> points = {Point(0, 0, 0, 0), Point(1, 1, 10, 0), Point(2, 2, 20, 0)};
-    //double longest_shortest = graph.longestShortestPath(points);
-    //assert(longest_shortest > 0);
-
-    // Test WSPD Check with well-separated points
-    std::vector<Point> set1 = {Point(0, 0, 0, 0), Point(0, 1, 5, 0), Point(1, 0, 10, 0)};
-    std::vector<Point> set2 = {Point(2, 2, 15, 0), Point(3, 3, 20, 0), Point(4, 4, 24, 0)};
-    double d = -1.0;
-    //auto wspd_result = graph.wspdCheck(set1, set2, d, d, 1.0);
-    //assert(!std::get<0>(wspd_result).empty());
-
-    std::cout << "All tests passed!" << std::endl;
-}
-
-void testHub_labels() {
-    std::string path = "../../data/mini-ch.fmi";
+    constexpr int number_of_tests = 400;
+    string path = "../../data/0200.32.fmi";
 
     ///////////////////////////////////////////////////////////////////////////////////
     /// LOAD THE ORIGINAL GRAPH
     ///////////////////////////////////////////////////////////////////////////////////
-    auto tup = load_fmi_ch(path,  -1, true);
-    auto systems = std::get<0>(tup);
-    Graph graph = std::get<1>(tup);
-    int number_of_nodes = graph.adj.size();
-    // init the hub labels for faster shortest path distance calculation
-    graph.init_hub_labels();
-    bool test = true;
+    auto tup = load_fmi(path,  -1);
+    auto systems = get<0>(tup);
+    auto used_points = vector<int>();
+    Graph graph = get<1>(tup);
+    graph.sort_adj();
 
-    for (int i = 0; i < 100; i++) {
-        int random_source = rand() % number_of_nodes;
-        int random_target = rand() % number_of_nodes;
-        auto original_dist = graph.dijkstra(random_source, random_target).second;
-        auto hl_dist = graph.hl_distance(random_source, random_target);
-        if (hl_dist != original_dist) {
-            std::cout << "Hub label distance does not match Dijkstra distance for nodes "
-                      << random_source << " and " << random_target << ": "
-                      << hl_dist << " != " << original_dist << std::endl;
-            test = false;
-        }
-        assert(test);
+    // add all points to used_points
+    for (int p = 0; p < graph.adj.size(); p++) {
+        used_points.push_back(p);
     }
+
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    /// TEST random queries on the spanners
+    /// analyse t-value
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    // RANDOM PATH TESTING
+    double time_sum_dijkstra = 0;
+    double time_sum_spira = 0;
+    int skipped_tests = 0;
+
+    for (int i = 0; i < number_of_tests; i++) {
+        int random_source = used_points[rand() % used_points.size()];
+        int num_targets = graph.adj[random_source].size();
+        if (num_targets == 0) {
+            std::cout << "No targets for source " << random_source << ". Skipping test." << std::endl;
+            skipped_tests++;
+            continue; // Skip if no targets are available
+        }
+        int random_target = used_points[rand() % used_points.size()];
+
+        auto start_dijkstra = std::chrono::high_resolution_clock::now();
+        auto dikstra_dist = graph.dijkstra(random_source, random_target).second;
+        auto end_dijkstra = std::chrono::high_resolution_clock::now();
+
+        auto start_spira = std::chrono::high_resolution_clock::now();
+        auto spira_dist = graph.spira_sp(random_source, random_target);
+        auto end_spira = std::chrono::high_resolution_clock::now();
+
+        if (dikstra_dist != spira_dist) {
+            cout << "Distane ERROR !!!! <--------------------------------------------" << endl;
+            cout << "Source: " << random_source << ", Target: " << random_target << endl;
+            cout << "Dijkstra: " << dikstra_dist << endl;
+            cout << "Spira: " << spira_dist << endl;
+        }
+
+
+        time_sum_dijkstra += std::chrono::duration_cast<std::chrono::milliseconds>(end_dijkstra - start_dijkstra).count();
+        time_sum_spira += std::chrono::duration_cast<std::chrono::milliseconds>(end_spira - start_spira).count();
+
+    }
+    cout << "average Dijkstra time: " << time_sum_dijkstra/(number_of_tests-skipped_tests) << endl;
+    cout << "average Spira time: " << time_sum_spira/(number_of_tests-skipped_tests) << endl;
 }
+
+
 
 int main(){
     testGraph();
-    testHub_labels();
     return 0
     ;
 }

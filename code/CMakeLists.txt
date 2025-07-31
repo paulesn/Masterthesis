@@ -58,6 +58,8 @@ add_executable(GraphTest
         test/GraphTest.cpp
         src/DataWriter.cpp
         src/DataWriter.h
+        src/ThetaSpanner.cpp
+        src/ThetaSpanner.hpp
 )
 
 add_executable(Theta

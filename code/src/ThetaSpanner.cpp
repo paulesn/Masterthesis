@@ -87,13 +87,17 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
     return spanner;
 }
 
-void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
+void dynamic_theta_update(Graph *graph, Graph* spanner, const double t, double early_stop) {
 
     /*
      *In this variant of the dynamic theta update, we iterate over nodes instead of edges.
      *this potentially increases the number of edges in the spanner graph, but it is more efficient, because we can use a multiple target djikstra
      *
      */
+    if (early_stop > 1 || early_stop <= 0) {
+        early_stop = 1;
+        std::cout << "Early stop condition was corrected to: " << early_stop << std::endl;
+    }
 
     int counter = 0;
     std::cout << "Updating theta spanner graph with " << t << " zones." << std::endl <<">";
@@ -108,7 +112,7 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
         }
     }
 
-    const int number_edges = pq.size();
+    const int number_edges = pq.size()*early_stop;
 
     //iterate through all edges
     for (int i = 0; i < number_edges; i++) {

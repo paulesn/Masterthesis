@@ -1,6 +1,7 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
+#include <algorithm>
 #include <vector>
 #include <utility>
 #include <iostream>
@@ -55,6 +56,16 @@ public:
 
     void addEdge(int u, int v, double w);
     std::pair<std::vector<int>, double> dijkstra(int src, int dest, double maximum=-1);
+
+    /**
+     * This is a variant of the dijkstra algorithm designed by spira et al. in the paper
+     * https://link.springer.com/article/10.1007/BF01190847?utm_source=chatgpt.com
+     * @param src the node id of the source node
+     * @param dest the node id of the target node
+     * @param maximum the maximum distance explored. currently not used. only incuded to allow drop in replacement with the dijkstra implementation
+     * @return
+     */
+    double spira_sp(int src, int dest, double maximum=-1);
     std::vector<std::pair<std::vector<int>, double>> multiSourceMultiTargetDijkstra(
         const std::vector<int>& sources,
         const std::vector<int>& targets,
@@ -62,6 +73,14 @@ public:
     );
 
     double hl_distance(int source, int target);
+
+
+
+    void sort_adj() {
+        for (int i = 0; i < n; ++i) {
+            std::sort(adj[i].begin(), adj[i].end(), [](Edge& a, Edge& b) {return a.weight < b.weight;});
+        }
+    }
 
     int n;
     std::vector<std::vector<Edge>> adj;
