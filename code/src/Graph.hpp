@@ -24,7 +24,6 @@ struct Point {
 
     bool operator==(const Point& other) const;
     bool operator<(const Point& other) const;
-    int level; // level of CH
 
     friend std::ostream& operator<<(std::ostream& os, const Point& p);
 };
