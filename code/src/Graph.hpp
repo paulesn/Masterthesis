@@ -20,7 +20,7 @@ struct Point {
     int id; // Unique identifier for the point, -1 if not set
 
     Point(double x_, double y_);
-    Point(double x_, double y_, int id_, int level_=-1);
+    Point(double x_, double y_, int id_);
 
     bool operator==(const Point& other) const;
     bool operator<(const Point& other) const;
