@@ -2,14 +2,16 @@ import fmi_loader
 import random
 import networkx as nx
 
-graph = fmi_loader.load("../../data/theta_spanner.fmi")
+graph = fmi_loader.load("../../data/test.fmi")
+graph.to_undirected()
 
-for i in range(5000):
-    source = random.choice(range(graph.number_of_nodes()-1))
-    target = random.choice(range(graph.number_of_nodes()-1))
+for i in range(1):
+    source = 3
+    target = 1
     if source == target:
         continue
-    # l = nx.shortest_path_length(graph, source, target)
+    l = nx.shortest_path_length(graph, source, target, weight='weight')
+    print(l)
     # if l == float('inf'):
         # print(f"Shortest path from {source} to {target}: {l}")
 

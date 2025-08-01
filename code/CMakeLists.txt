@@ -11,28 +11,6 @@ find_package(SFML COMPONENTS Graphics Window System REQUIRED)
 # Optional: add include directory if your headers are separated
 # include_directories(include)
 
-add_executable(main
-        src/main.cpp
-        src/Graph.cpp
-        src/Quadtree.cpp
-        src/Dataloader.cpp
-        src/Dataloader.hpp
-        src/DataWriter.cpp
-        src/DataWriter.h
-)
-
-add_executable(sizeTest
-        test/sizeTest.cpp
-        src/Graph.cpp
-        src/Quadtree.cpp
-        src/Dataloader.cpp
-        src/Dataloader.hpp
-        src/ThetaSpanner.cpp
-        src/HubLabels.hpp
-        src/HubLabels.cpp
-        src/DataWriter.cpp
-        src/DataWriter.h
-)
 
 add_executable(WSPDTest
         test/WSPDTest.cpp
@@ -62,36 +40,9 @@ add_executable(GraphTest
         src/ThetaSpanner.hpp
 )
 
-add_executable(Theta
-        src/Graph.cpp
-        src/Dataloader.cpp
-        src/Dataloader.hpp
-        src/ThetaSpanner.cpp
-        src/ThetaSpanner.hpp
-        src/DataWriter.cpp
-        src/DataWriter.h
-)
 
-add_executable(ThetaSpannerTest
-        test/thetaSpannerTest.cpp
-        src/ThetaSpanner.cpp
-        src/ThetaSpanner.hpp
-        src/Graph.cpp
-        src/HubLabels.cpp
-)
 
 
 # Link OpenMP
 target_link_libraries(WSPDTest PRIVATE OpenMP::OpenMP_CXX)
-target_link_libraries(sizeTest PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(GraphTest PRIVATE OpenMP::OpenMP_CXX)
-target_link_libraries(ThetaSpannerTest PRIVATE OpenMP::OpenMP_CXX)
-
-# Link  SFML
-target_link_libraries(WSPDTest
-        PRIVATE
-        sfml-graphics
-        sfml-window
-        sfml-system
-)
-

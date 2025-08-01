@@ -568,6 +568,11 @@ sYOP
 sebastian
 sanity
 signal
+schauen
+sich
+stellige
+sortierete
+spira
 and
 an
 all
@@ -935,6 +940,9 @@ applicable
 auf
 arbeiten
 aus
+als
+anzeigen
+anschauen
 target
 to
 the
@@ -1221,6 +1229,7 @@ taken
 took
 tests
 testen
+timen
 we
 with
 want
@@ -1468,6 +1477,8 @@ wzw
 wzp
 wFm
 working
+wie
+world
 draw
 defined
 distance
@@ -1778,6 +1789,7 @@ directory
 duplicate
 daniels
 dynamic
+dem
 edge
 edges
 each
@@ -2067,6 +2079,8 @@ eQr
 exM
 ensures
 exit
+einzelne
+ersatz
 from
 found
 for
@@ -3232,6 +3246,9 @@ ldpCSoC
 lla
 llS
 lTS
+langen
+länge
+lange
 in
 identify
 its
@@ -3818,6 +3835,7 @@ ooa
 obtain
 obtained
 obstacle
+oder
 path
 point
 points
@@ -4116,6 +4134,8 @@ polytopcs
 polytops
 primitiven
 parallel
+passiert
+priority
 midpoint
 most
 more
@@ -4422,6 +4442,7 @@ mxi
 mWY
 mBx
 mean
+millisekunden
 replace
 range
 represented
@@ -4716,6 +4737,7 @@ rke
 rwjU
 result
 release
+relaxiert
 new
 no
 next
@@ -4968,6 +4990,7 @@ nDejrq
 nWI
 noch
 naive
+nach
 Repeat
 Remove
 Requirements
@@ -5411,6 +5434,8 @@ uTB
 uDnF
 uSS
 uLP
+unterscheidet
+und
 jump
 jumps
 jYQ
@@ -6115,6 +6140,8 @@ brv
 bxL
 boundary
 been
+buckets
+brauchen
 Points
 Proof
 Purpose
@@ -6607,6 +6634,9 @@ klg
 knj
 kpiR
 koT
+klappt
+kurzen
+kurz
 holds
 has
 hops
@@ -7098,6 +7128,7 @@ TIVMs
 Trh
 TyB
 Teil
+TODOS
 graph
 grid
 given
@@ -8057,6 +8088,7 @@ visible
 verstanden
 vergleichen
 visualisierung
+vis
 For
 Formal
 Factor
@@ -8313,6 +8345,7 @@ FRf
 Folv
 Figure
 Funktion
+Fehler
 As
 Algorithm
 Add
@@ -9626,6 +9659,7 @@ CUqw
 Current
 Creating
 Created
+Code
 Optimization
 Oy
 OQ
@@ -10140,6 +10174,7 @@ Den
 Documents
 Dauer
 Drawing
+Daniels
 Here
 Handwritten
 Hph
@@ -10589,6 +10624,7 @@ KJZ
 KDH
 KIb
 KuT
+Kanten
 query
 qj
 qr
@@ -10828,6 +10864,7 @@ qUiSNY
 qWE
 qHy
 quadtree
+queue
 But
 Build
 BK
@@ -11536,6 +11573,7 @@ VrRA
 VErt
 Vhn
 VqX
+Visualisierung
 Jy
 JUf
 JY
