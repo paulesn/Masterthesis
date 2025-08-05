@@ -29,12 +29,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Ideen/Theta Graphen/Experiment Logs dynamic theta Graph.md",
+                "file": "Ideen/Theta Graphen/Buckets.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Experiment Logs dynamic theta Graph"
+              "title": "Buckets"
             }
           }
         ],
@@ -111,7 +111,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Ideen/Theta Graphen/Experiment Logs dynamic theta Graph.md",
+                "file": "Ideen/Theta Graphen/Buckets.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -121,7 +121,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Experiment Logs dynamic theta Graph"
+              "title": "Backlinks for Buckets"
             }
           },
           {
@@ -193,10 +193,10 @@
   },
   "active": "60e049b23e61f7e1",
   "lastOpenFiles": [
-    "Related Work/Approximation Algorithm for Motion Planning.pdf",
     "Ideen/Theta Graphen/Experiment Logs dynamic theta Graph.md",
+    "Ideen/Theta Graphen/Buckets.md",
+    "Related Work/Approximation Algorithm for Motion Planning.pdf",
     "Related Work/Notes on Spanners.md",
-    "Ideen/Theta Graphen/Untitled.md",
     "Ideen/Theta Graphen/Gegenbeweis Theta Spanner.md",
     "Ideen/Spanner for Visibility Graphs/n 2 Proof v2.md",
     "Ideen/Spanner for Visibility Graphs/Construction using Longest Edge Separation.md",

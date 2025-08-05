@@ -24,6 +24,18 @@ add_executable(WSPDTest
         src/DataWriter.cpp
         src/DataWriter.h
 )
+add_executable(PathBucketTest
+        src/PathBucketTest.cpp
+        src/Graph.cpp
+        src/Quadtree.cpp
+        src/Dataloader.cpp
+        src/Dataloader.hpp
+        src/ThetaSpanner.cpp
+        src/HubLabels.hpp
+        src/HubLabels.cpp
+        src/DataWriter.cpp
+        src/DataWriter.h
+)
 
 add_executable(GraphTest
         src/Graph.cpp
@@ -46,3 +58,4 @@ add_executable(GraphTest
 # Link OpenMP
 target_link_libraries(WSPDTest PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(GraphTest PRIVATE OpenMP::OpenMP_CXX)
+target_link_libraries(PathBucketTest PRIVATE OpenMP::OpenMP_CXX)

@@ -38,7 +38,7 @@ bool Point::operator<(const Point &other) const {
 
 Graph::Graph(int nodes) : n(nodes), adj(nodes){
     for (int i = 0; i < n; ++i) {
-        id_point_map.emplace_back(0.0, 0.0, i, -1); // Initialize points with default coordinates and unique IDs
+        id_point_map.emplace_back(0.0, 0.0, i); // Initialize points with default coordinates and unique IDs
     }
 }
 Graph::Graph(const vector<Point>& points) : n(points.size()), adj(n) {

@@ -29,12 +29,12 @@ int main() {
     int theta = 24; // Number of zones for theta spanner
     double s = 4.5; // Separation factor for WSPD
     double t_target = 1.1;
-    vector<double> early_stops = {0.01, 0.05, 0.1, 0.25, 0.4, 0.5}; // Early stop condition for dynamic theta update, 1.0 means no early stop
+    vector<double> early_stops = {0.01}; //, 0.05, 0.1, 0.25, 0.4, 0.5}; // Early stop condition for dynamic theta update, 1.0 means no early stop
     bool using_wspd_e = true;
     bool using_wspd_spd = false;
     bool using_theta = true;
 
-    string path = "../../data/0200.32.fmi";
+    string path = "../../data/0025.32.fmi";
     string out_path = "../../data/theta_spanner.gl";
 
     ///////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ int main() {
         if (using_theta) {
             auto start3 = std::chrono::high_resolution_clock::now();
             spanner_theta = create_theta_spanner_graph(&graph, theta);
-            dynamic_theta_update(&graph, &spanner_theta, t_target, early_stop);
+            //dynamic_theta_update(&graph, &spanner_theta, t_target, early_stop);
             auto end3 = std::chrono::high_resolution_clock::now();
 
             time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();
@@ -96,6 +96,7 @@ int main() {
         double theta_max_t = 0.0;
         double theta_mean_t = 0.0;
         bool theta_has_neg_t = false;
+        vector<int> max_path;
 
 
         // RANDOM PATH TESTING
@@ -108,14 +109,20 @@ int main() {
                 continue; // Skip if no targets are available
             }
             int random_target = graph.adj[random_source][rand() % num_targets].target;
-            auto original_dist = graph.dijkstra(random_source, random_target).second;
+            auto result_d = graph.dijkstra(random_source, random_target);
+            double original_dist = result_d.second;
 
             auto spanner_theta_dist = numeric_limits<double>::infinity();
-            if (using_theta) spanner_theta_dist = spanner_theta.dijkstra(random_source, random_target).second;
+
+            auto result_t = spanner_theta.dijkstra(random_source, random_target);
+            spanner_theta_dist = result_t.second;
 
             if (spanner_theta_dist == numeric_limits<double>::infinity()) {t_has_inf = true;}
 
-            if (spanner_theta_dist/original_dist > theta_max_t && spanner_theta_dist/original_dist < numeric_limits<double>::infinity()) {theta_max_t = spanner_theta_dist/original_dist;}
+            if (spanner_theta_dist/original_dist > theta_max_t && spanner_theta_dist/original_dist < numeric_limits<double>::infinity()) {
+                theta_max_t = spanner_theta_dist/original_dist;
+                max_path = result_t.first;
+            }
 
             theta_mean_t += spanner_theta_dist/original_dist;
 
@@ -148,7 +155,7 @@ int main() {
         std::cout << "All tests completed." << std::endl;
 
         spanner_theta.store_to_disk("../../data/theta_spanner.fmi");
-        write_gf(spanner_theta, out_path);
+        write_gf_with_highlight(spanner_theta, out_path, max_path);
         //spanner_theta.draw();
     }
 }
