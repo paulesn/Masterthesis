@@ -22,6 +22,6 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
 
 // Load a star system and graph from a file in FMI format
 std::tuple<std::vector<Point>, Graph> load_fmi(const std::string& filepath, int limit = -1, bool with_edges = true);
-std::tuple<std::vector<Point>,Graph> load_fmi_ch(const std::string &filepath, int limit, bool with_edges);
 
+Graph load_coastline(const std::string &filepath);
 #endif // DATALOADER_HPP

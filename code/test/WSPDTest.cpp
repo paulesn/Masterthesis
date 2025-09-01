@@ -8,8 +8,7 @@
 #include <set>
 #include <chrono>
 #include <csignal>
-
-#include "../lib/json.hpp"
+#include <omp.h>
 
 
 using namespace std;
@@ -28,8 +27,6 @@ double normalize(double value) {
 int main() {
     int theta = 24; // Number of zones for theta spanner
     double s = 4.5; // Separation factor for WSPD
-    bool using_wspd_e = true;
-    bool using_wspd_spd = false;
     bool using_theta = true;
 
     string path = "../../data/0025.32.fmi";
@@ -42,86 +39,31 @@ int main() {
     auto systems = get<0>(tup);
     auto used_points = vector<int>();
     Graph graph = get<1>(tup);
-    graph.attach_lone_points();
     // init the hub labels for faster shortest path distance calculation
     //graph.init_hub_labels();
     std::cout << "Loaded " << systems.size() << " points." << std::endl;
 
-    Graph spanner_e = Graph(graph.n);
-    Graph spanner_sp = Graph(graph.n);
     Graph spanner_theta = Graph(graph.n);
 
     long time_t =-1;
-    long time_sp =-1;
-    long time_e =-1;
 
 
 
-    ///////////////////////////////////////////////////////////////////////////////////
-    /// INSERT SYSTEMS INTO THE QUADTREE
-    ///////////////////////////////////////////////////////////////////////////////////
-    auto tree = new Quadtree(32);
-    int counter = 0;
-    std::cout << "Inserting systems into the quadtree..." << std::endl;
-    for (int p = 0; p < graph.adj.size(); p++) {
-        if (tree->insert(graph.id_point_map[p])) {
-            counter++;
-            used_points.push_back(p);
-        }
-    }
-
-    auto all_points = tree->get_all_points();
-    if (all_points.size() != counter) {
-        std::cout << "Error: Quadtree contains " << all_points.size() << " points, but expected " << systems.size() << "." << std::endl;
-        raise(SIGINT); // Raise SIGINT to terminate the program
-    }
 
 
-    std::cout << "Inserted all systems into the quadtree." << std::endl;
-    ///////////////////////////////////////////////////////////////////////////////////
-    /// CALCULATE WSPD (euklidian and shortest path distance)
-    ///////////////////////////////////////////////////////////////////////////////////
+    auto start3 = std::chrono::high_resolution_clock::now();
+    spanner_theta = create_theta_spanner_graph(&graph, theta);
+    std::cout << "Created theta spanner graph with " << spanner_theta.number_of_edges << " edges." << std::endl;
+    //dynamic_theta_update(&graph, &spanner_theta, 1.1);
+    std::cout << "Updated theta spanner graph with 1.1 zones. and has " << spanner_theta.number_of_edges << std::endl;
+    auto end3 = std::chrono::high_resolution_clock::now();
 
-    if (using_wspd_e){
-        auto start1 = std::chrono::high_resolution_clock::now();
-        spanner_e = wspd(tree, s, &graph);
-        auto end1 = std::chrono::high_resolution_clock::now();
+    time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();
 
-        time_e = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count();
-        std::cout << "wspd_e("<< s << ") took "
-              << time_e
-              << " ms. And created "<< spanner_e.number_of_edges
-              << " edges." << std::endl;
-    }
-
-    if (using_wspd_spd) {
-        auto start2 = std::chrono::high_resolution_clock::now();
-        spanner_sp = wspd_spd(tree, s, graph);
-        auto end2 = std::chrono::high_resolution_clock::now();
-
-        time_sp = std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count();
-
-        std::cout << "wspd_sp("<< s << ") took "
-              << time_sp
-              << " ms. And created " << spanner_sp.number_of_edges << " edges." << std::endl;
-        std::cout << "For   " << systems.size() << " nodes." << std::endl;
-    }
-
-    if (using_theta) {
-        auto start3 = std::chrono::high_resolution_clock::now();
-        spanner_theta = create_theta_spanner_graph(&graph, theta);
-        std::cout << "Created theta spanner graph with " << spanner_theta.number_of_edges << " edges." << std::endl;
-        dynamic_theta_update(&graph, &spanner_theta, 1.1);
-        std::cout << "Updated theta spanner graph with 1.1 zones. and has " << spanner_theta.number_of_edges << std::endl;
-        auto end3 = std::chrono::high_resolution_clock::now();
-
-        time_t = std::chrono::duration_cast<std::chrono::milliseconds>(end3 - start3).count();
-
-        std::cout << "theta("<< theta << ") took "
-              << time_t
-              << " ms. And created " << spanner_theta.number_of_edges << " edges." << std::endl;
-        std::cout << "For   " << systems.size() << " nodes." << std::endl;
-    }
+    std::cout << "theta("<< theta << ") took "
+          << time_t
+          << " ms. And created " << spanner_theta.number_of_edges << " edges." << std::endl;
+    std::cout << "For   " << systems.size() << " nodes." << std::endl;
 
 
 
@@ -130,100 +72,51 @@ int main() {
     /// analyse t-value
     ///////////////////////////////////////////////////////////////////////////////////
 
-    constexpr int number_of_tests = 5000;
-    bool e_has_inf = false;
-    bool sp_has_inf = false;
+    constexpr int number_of_tests = 50000;
     bool t_has_inf = false;
-    double e_max_t = 0.0;
-    double sp_max_t = 0.0;
     double theta_max_t = 0.0;
-    double e_mean_t = 0.0;
-    double sp_mean_t = 0.0;
     double theta_mean_t = 0.0;
-    bool e_has_neg_t = false;
-    bool sp_has_neg_t = false;
     bool theta_has_neg_t = false;
+    vector <int> max_path;
 
 
     // RANDOM PATH TESTING
+    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+
+    #pragma omp parallel for num_threads(num_threads) shared(spanner_theta, t_has_inf, theta_max_t, theta_mean_t, theta_has_neg_t, max_path) schedule(dynamic)
     for (int i = 0; i < number_of_tests; i++) {
-        int random_source = used_points[rand() % used_points.size()];
+        int random_source = rand() % spanner_theta.adj.size();
         int num_targets = graph.adj[random_source].size();
         if (num_targets == 0) {
             std::cout << "No targets for source " << random_source << ". Skipping test." << std::endl;
+            i--;
             continue; // Skip if no targets are available
         }
         int random_target = graph.adj[random_source][rand() % num_targets].target;
         auto original_dist = graph.dijkstra(random_source, random_target).second;
-
-        auto spanner_sp_dist = numeric_limits<double>::infinity();
-        if (using_wspd_spd) spanner_sp_dist = spanner_sp.dijkstra(random_source, random_target).second;
-
-        auto spanner_e_dist = numeric_limits<double>::infinity();
-        if (using_wspd_e) spanner_e_dist = spanner_e.dijkstra(random_source, random_target).second;
-
         auto spanner_theta_dist = numeric_limits<double>::infinity();
-        if (using_theta) spanner_theta_dist = spanner_theta.dijkstra(random_source, random_target).second;
+        auto s_dist = spanner_theta.dijkstra(random_source, random_target);
 
-        if (spanner_e_dist == numeric_limits<double>::infinity()) {e_has_inf = true;}
-        if (spanner_sp_dist == numeric_limits<double>::infinity()) {sp_has_inf = true;}
-        if (spanner_theta_dist == numeric_limits<double>::infinity()) {t_has_inf = true;}
-        if (normalize(spanner_e_dist) < normalize(original_dist)) {
-            e_has_neg_t = true;
+        #pragma omp critical
+        {
+            if (s_dist.second < numeric_limits<double>::infinity()) {
+                spanner_theta_dist = s_dist.second;
+            }
+            if (spanner_theta_dist == numeric_limits<double>::infinity()) {t_has_inf = true;}
+            if (normalize(spanner_theta_dist) < normalize(original_dist)) {theta_has_neg_t = true;}
+            if (spanner_theta_dist/original_dist > theta_max_t && spanner_theta_dist/original_dist < numeric_limits<double>::infinity()) {
+                theta_max_t = spanner_theta_dist/original_dist;
+                max_path = s_dist.first;
+            }
+            theta_mean_t += spanner_theta_dist/original_dist;
         }
-        if (normalize(spanner_sp_dist) < normalize(original_dist)) {
-            sp_has_neg_t = true;
-        }
-        if (normalize(spanner_theta_dist) < normalize(original_dist)) {theta_has_neg_t = true;}
-        if (spanner_e_dist/original_dist > e_max_t && spanner_e_dist/original_dist < numeric_limits<double>::infinity()) {e_max_t = spanner_e_dist/original_dist;}
-        if (spanner_sp_dist/original_dist > sp_max_t && spanner_sp_dist/original_dist < numeric_limits<double>::infinity()) {
-            sp_max_t = spanner_sp_dist/original_dist;
-        }
-        if (spanner_theta_dist/original_dist > theta_max_t && spanner_theta_dist/original_dist < numeric_limits<double>::infinity()) {theta_max_t = spanner_theta_dist/original_dist;}
-
-        sp_mean_t += spanner_sp_dist/original_dist;
-        e_mean_t += spanner_e_dist/original_dist;
-        theta_mean_t += spanner_theta_dist/original_dist;
-
-        /**
-        std::cout << "Test " << i + 1
-                  << " (" << random_source << " -> " << random_target << "): "
-                  << "Original distance: " << original_dist << ", "
-                  << "Spanner SPD distance: " << spanner_sp_dist << ", "
-                  << "Spanner E distance: " << spanner_e_dist << std::endl
-                  << "Spanner Theta distance: " << spanner_theta_dist << std::endl;
-*/
     }
 
     int c2 = 0;
     double spanner_theta_max_t = 0.0;
     cout << ">";
     // ALL EDGES TEST
-    for (int i=0; i<= graph.n; i++) {
-        if (graph.n > 100 && (c2) % (graph.n/100) == 0) {
-            std::cout << "|";
-            cout.flush();
-        }
-        c2++;
 
-        if (false){
-            for (auto edge: graph.adj[i]) {
-                auto orginal_dist = edge.weight;
-                auto spanner_theta_dist = numeric_limits<double>::infinity();
-                if (using_theta) {
-                    spanner_theta_dist = spanner_theta.dijkstra(i, edge.target).second;
-                    spanner_theta_max_t = spanner_theta_dist / orginal_dist;
-                    if (spanner_theta_dist == numeric_limits<double>::infinity()) {t_has_inf = true;}
-                    if (spanner_theta_dist > spanner_theta_max_t) spanner_theta_max_t = spanner_theta_dist;
-                }
-            }
-        }
-    }
-
-    int noe = 0;
-    for (int i = 0; i < graph.adj.size(); i++) {
-        noe += spanner_theta.adj[i].size();
-    }
 
     cout << std::endl;
 
@@ -231,22 +124,7 @@ int main() {
     std::
     cout << std::endl << "Results after " << number_of_tests << " tests:" << std::endl;
     cout << "----------------------------------------------------------------------------------" << std::endl;
-    std::cout << "Spanner SPD has " << (using_wspd_spd ? "" : "not ") << "been used." << std::endl;
-    std::cout << "Spanner SPD has " << spanner_sp.number_of_edges << " Edges." << std::endl;
-    std::cout << "Spanner SPD has been calculated in " << time_sp << " ms." << std::endl;
-    std::cout << "Spanner SPD has infinity: " << (sp_has_inf ? "Yes" : "No") << std::endl;
-    std::cout << "Spanner SPD has negative t-value: " << (sp_has_neg_t ? "Yes" : "No") << std::endl;
-    std::cout << "Spanner SPD max t-value: " << sp_max_t << std::endl;
-    std::cout << "Spanner SPD mean t-value: " << (sp_mean_t / number_of_tests) << std::endl << std::endl;
-    std::cout << "Spanner E has " << (using_wspd_e ? "" : "not ") << "been used." << std::endl;
-    std::cout << "Spanner E has " << spanner_e.number_of_edges << " Edges." << std::endl;
-    std::cout << "Spanner E has been calculated in " << time_e << " ms." << std::endl;
-    std::cout << "Spanner E has infinity: " << (e_has_inf ? "Yes" : "No") << std::endl;
-    std::cout << "Spanner E has negative t-value: " << (e_has_neg_t ? "Yes" : "No") << std::endl;
-    std::cout << "Spanner E max t-value (in random tests): " << e_max_t << std::endl;
-    std::cout << "Spanner E mean t-value: " << (e_mean_t/ number_of_tests)<< std::endl << std::endl;
     std::cout << "Spanner Theta has " << (using_theta ? "" : "not ") << "been used." << std::endl;
-    std::cout << "Spanner Theta has " << noe << " Edges." << std::endl;
     std::cout << "Spanner Theta has been calculated in " << time_t << " ms." << std::endl;
     std::cout << "Spanner Theta has infinity: " << (t_has_inf ? "Yes" : "No") << std::endl;
     std::cout << "Spanner Theta has negative t-value: " << (theta_has_neg_t ? "Yes" : "No") << std::endl;
@@ -254,7 +132,13 @@ int main() {
     std::cout << "Spanner Theta mean t-value: " << (theta_mean_t / number_of_tests) << std::endl;
     std::cout << "All tests completed." << std::endl;
 
-    write_gf(spanner_theta, out_path);
+    vector<Point> path_to_draw;
+    for (auto &id : max_path) {
+        path_to_draw.emplace_back(graph.id_point_map[id].x, graph.id_point_map[id].y);
+    }
+
+    write_gf(out_path, theta, path_to_draw);
+    write_flat(out_path + ".flat", theta, path_to_draw);
 }
 
 // TODO auch die worst case edge ausrechnen

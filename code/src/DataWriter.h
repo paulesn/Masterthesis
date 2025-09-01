@@ -15,6 +15,6 @@
  * @param g The graph to write to the file
  * @return 0 on success, 1 on failure
  */
-int write_gf(const Graph& g, std::string path);
-
+int write_gf(std::string path, int number_of_cones, std::vector<Point> path_to_draw);
+int write_flat(std::string path, int number_of_cones, std::vector<Point> path_to_draw);
 #endif //DATAWRITER_H

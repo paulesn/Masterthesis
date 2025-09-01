@@ -16,9 +16,9 @@ using namespace std;
 
 
 
-Point::Point(const double x_, const double y_, int level_): x(x_), y(y_), id(-1), level(level_) {}
+Point::Point(const double x_, const double y_): x(x_), y(y_), id(-1) {}
 
-Point::Point(const double x_, const double y_, const int id_, int level_): x(x_), y(y_), id(id_), level(level_) {}
+Point::Point(const double x_, const double y_, const int id_): x(x_), y(y_), id(id_) {}
 
 std::ostream& operator<<(std::ostream& os, const Point& p) {
     os << "(" << p.x << ", " << p.y << ")";
@@ -36,7 +36,7 @@ bool Point::operator<(const Point &other) const {
 
 Graph::Graph(int nodes) : n(nodes), adj(nodes){
     for (int i = 0; i < n; ++i) {
-        id_point_map.emplace_back(0.0, 0.0, i, -1); // Initialize points with default coordinates and unique IDs
+        id_point_map.emplace_back(0.0, 0.0, i); // Initialize points with default coordinates and unique IDs
     }
 }
 Graph::Graph(const vector<Point>& points) : n(points.size()), adj(n) {
@@ -211,55 +211,9 @@ vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
     return results;
 }
 
-void Graph::init_hub_labels() {
-    vector<vector<int>> levels;
-    // generate upwards edges
-    std::vector<std::vector<std::tuple<int,int>>> upwards_edges (n);
-    for (int u = 0; u < n; ++u) {
-        // add to the levels vector
-        Point* u_point = &id_point_map[u];
-        if (u_point->level < 0) {
-            cout << "Node " << u << " has no level assigned, cannot generate hub labels." << endl;
-            raise(SIGINT); // Raise SIGINT to terminate the program
-        }
-        if (levels.size() <= u_point->level) {
-            levels.resize(u_point->level + 1, {});
-        }
-        levels[u_point->level].push_back(u);
-        for (const auto &edge : adj[u]) {
-            int v = edge.target;
-            Point* v_point = &id_point_map[v];
-            if (v_point->level > u_point->level) { // Only consider edges going upwards in the order
-                upwards_edges[u].emplace_back(v, edge.weight);
-            }
-        }
-    }
-    // generate downwards edges
-    std::vector<std::vector<std::tuple<int,int>>> downwards_edges (n);
-    for (int u = 0; u < n; ++u) {
-        for (const auto &edge : adj[u]) {
-            int v = edge.target;
-            Point* u_point = &id_point_map[u];
-            Point* v_point = &id_point_map[v];
-            if (v_point->level < u_point->level) { // Only consider edges going downwards in the order
-                downwards_edges[u].emplace_back(v, edge.weight);
-            }
-        }
-    }
-    // call hublabel generator
-    auto hub_labels = generate_hub_labels(levels, upwards_edges, downwards_edges, 1);
-    // store hub labels in a suitable data structure
-    forward_hub_labels = std::get<0>(hub_labels);
-    backward_hub_labels = std::get<1>(hub_labels);
 
-}
 
-double Graph::hl_distance(int source, int target) {
-    auto fl = forward_hub_labels[source];
-    auto bl = backward_hub_labels[target];
-    auto dist =  optimized_query(fl, bl);
-    return get<1>(dist);
-}
+
 
 
 double ::Graph::longestShortestPath(const vector<Point>& set, int source) {
@@ -279,7 +233,7 @@ double ::Graph::longestShortestPath(const vector<Point>& set, int source) {
     double max_dist = 0;
     int new_source = -1;
     for (const auto &p : set) {
-        double dist = hl_distance(source, p.id);
+        double dist = get<1>(dijkstra(source, p.id));
         if (max_dist < dist) max_dist = dist;
         new_source = p.id;
     }
@@ -291,7 +245,7 @@ double ::Graph::longestShortestPath(const vector<Point>& set, int source) {
     // now we have the longest path distance, we can use it to find the maximum distance from the new source to all targets
     // which is the radius of the set
     for (const auto &p : set) {
-        double dist = hl_distance(new_source, p.id);
+        double dist = get<1>(dijkstra(new_source, p.id));
         if (max_dist < dist) max_dist = dist;
         new_source = p.id;
     }

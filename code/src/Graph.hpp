@@ -18,8 +18,8 @@ struct Point {
     double x, y;
     int id; // Unique identifier for the point, -1 if not set
 
-    Point(double x_, double y_, int level_=-1);
-    Point(double x_, double y_, int id_, int level_=-1);
+    Point(double x_, double y_);
+    Point(double x_, double y_, int id_);
 
     bool operator==(const Point& other) const;
     bool operator<(const Point& other) const;
@@ -50,8 +50,6 @@ public:
     std::unordered_set<std::pair<int, int>, pair_hash> existance; // to check if an edge exists
 
     int number_of_edges = 0;
-    std::vector<std::vector<std::tuple<int,int>>> forward_hub_labels; // forward hub labels for each node
-    std::vector<std::vector<std::tuple<int,int>>> backward_hub_labels; // backward hub labels for each node
 
     bool addEdge(int u, int v, double w, bool undirected = true);
     std::pair<std::vector<int>, double> dijkstra(int src, int dest, double maximum=-1);
@@ -60,10 +58,6 @@ public:
         const std::vector<int>& targets,
         bool all = false
     );
-
-    double hl_distance(int source, int target);
-
-    void init_hub_labels();
 
     double longestShortestPath(const std::vector<Point>& set, int source = -1);
 
