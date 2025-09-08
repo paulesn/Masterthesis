@@ -83,8 +83,6 @@ struct QuadtreeNode {
     [[nodiscard]] bool area_contains(Point s) const;
     [[nodiscard]] bool intercept_rect(double x, double y, double h) const;
     [[nodiscard]] std::string rec_string(int level = 0) const;
-    std::vector<int> angle_intersect(Point source, double angle_a, double angle_b) const;
-
     [[nodiscard]] std::vector<Point> get_all_points() const;
 
     [[nodiscard]] bool contains(const Point & p) const;
@@ -117,9 +115,6 @@ struct Quadtree {
     explicit Quadtree(double height_ = 1);
     ~Quadtree() = default;
 
-std::vector<int> angle_intersect(Point source, double angle_a, double angle_b) const {
-        return root.angle_intersect(source, angle_a, angle_b);
-    }
 
 
     bool insert(Point p);

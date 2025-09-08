@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cmath>
 
 #include "Dataloader.hpp"
 #include "Quadtree.hpp"

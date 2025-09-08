@@ -46,7 +46,6 @@ std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int l
     std::vector<Point> systems; // id, x, y, z, jump multiplicator
 
     // print current working directory
-    std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
     std::ifstream file(filepath);
     if (!file.is_open()) {
         std::cerr << "Failed to open file: " << filepath << std::endl;

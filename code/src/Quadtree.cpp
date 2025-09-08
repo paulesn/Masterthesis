@@ -134,62 +134,6 @@ double x_on_angle_ray(double x, double y, double theta, double y_new) {
     return x_new;
 }
 
-bool QuadtreeNode::internal_angles_intersect(Point source, double angle_a, double angle_b) const {
-    vector<Point> corners = {
-        Point(cX + height, cY + height),
-        Point(cX + height, cY - height),
-        Point(cX - height, cY + height),
-        Point(cX - height, cY - height)
-    };
-    // check if any corner of the quadtree node is in the area
-    bool one_is_above_a = false;
-    bool one_is_below_b = false;
-    for (Point corner :corners) {
-        // it is inside if it is smaller than the angle_a and larger than angle_b at the same y position
-        auto angle_of_point = angle_between(source, corner);
-        if (angle_of_point < 0) angle_of_point += 2 * M_PI; // Normalize angle to [0, 2π]
-        if (angle_of_point >= angle_b && angle_of_point <= angle_a) {
-            return true; // at least one corner is in the area
-        }
-        if (angle_of_point > angle_a) one_is_above_a = true;
-        if (angle_of_point < angle_b) one_is_below_b = true;
-    }
-    // if one point is above both rays and at least one point is below both rays, the angles intersect with the rectangle
-    if (one_is_above_a && one_is_below_b) {
-        return true; // angles intersect with the rectangle
-    }
-    return false; // angles do not intersect with the rectangle
-}
-
-std::vector<int> QuadtreeNode::angle_intersect(Point source, double angle_a, double angle_b) const {
-    // Check if the angles are in the correct order
-    if (angle_a < angle_b) {
-        swap(angle_a, angle_b);
-    }
-    vector<int> result = {};
-    if (internal_angles_intersect(source, angle_a, angle_b)) {
-        for (auto child: {NW, NO, SW, SO}) {
-            if (child) {
-                // Check if the child node's area intersects with the angles
-                for (auto p: child->angle_intersect(source, angle_a, angle_b)) {
-                    result.push_back(p);
-                }
-            }
-        }
-    }
-    if (is_leaf) {
-        // If this is a leaf node, check if any of the points are in the area defined by the angles
-        for (const auto& p : points) {
-            double angle = angle_between(source, p);
-            if (angle < 0) angle += 2 * M_PI; // Normalize angle to [0, 2π]
-            if (angle_a >= angle || angle <= angle_b) {
-                result.push_back(p.id);
-            }
-        }
-    }
-    return result;
-}
-
 vector<Point> QuadtreeNode::get_all_points() const {
     if (is_leaf) {
         return points;
