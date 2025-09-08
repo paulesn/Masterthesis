@@ -19,7 +19,7 @@ using namespace std;
  * @return
  */
 double normalize(double value) {
-    return std::round(value * 10000.0) / 10000.0;
+    return (value * 10000.0) / 10000.0;
 }
 
 
