@@ -25,7 +25,7 @@ double normalize(double value) {
 
 
 int main() {
-    int theta = 24; // Number of zones for theta spanner
+    int theta = 50; // Number of zones for theta spanner
     double s = 4.5; // Separation factor for WSPD
     bool using_theta = true;
 
@@ -83,7 +83,7 @@ int main() {
     // RANDOM PATH TESTING
     int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
 
-    #pragma omp parallel for num_threads(num_threads) shared(spanner_theta, t_has_inf, theta_max_t, theta_mean_t, theta_has_neg_t, max_path) schedule(dynamic)
+    // #pragma omp parallel for num_threads(num_threads) shared(spanner_theta, t_has_inf, theta_max_t, theta_mean_t, theta_has_neg_t, max_path) schedule(dynamic)
     for (int i = 0; i < number_of_tests; i++) {
         int random_source = rand() % spanner_theta.adj.size();
         int num_targets = graph.adj[random_source].size();
@@ -137,8 +137,7 @@ int main() {
         path_to_draw.emplace_back(graph.id_point_map[id].x, graph.id_point_map[id].y);
     }
 
-    write_gf(out_path, theta, path_to_draw);
-    write_flat(out_path + ".flat", theta, path_to_draw);
+    write_gf_with_graph(out_path, theta, path_to_draw, 0, spanner_theta);
 }
 
 // TODO auch die worst case edge ausrechnen

@@ -97,7 +97,7 @@ std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int l
 
             auto arr = split(line, delimiter);
             // this creates the point. the data is in the format: id nonesense x y ...
-            systems.emplace_back(stoi(arr[0]), stod(arr[2]), stod(arr[3]));
+            systems.emplace_back(stoi(arr[2]), stod(arr[3]), stod(arr[1]));
         } else {
             if (!with_edges) {
                 // If we are not loading edges, we can stop here

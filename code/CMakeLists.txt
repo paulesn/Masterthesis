@@ -19,6 +19,18 @@ add_executable(main
         src/DataWriter.cpp
         src/DataWriter.h
 )
+add_executable(MTA
+        src/MultiThetaAnalysis.cpp
+        src/Graph.cpp
+        src/Dataloader.cpp
+        src/Dataloader.hpp
+        src/DataWriter.cpp
+        src/Quadtree.cpp
+        src/ThetaSpanner.cpp
+        src/ThetaSpanner.hpp
+        src/DataWriter.h
+        src/MultiThetaAnalysis.h
+)
 
 add_executable(sizeTest
         test/sizeTest.cpp
@@ -59,14 +71,14 @@ add_executable(GraphTest
         src/DataWriter.h
 )
 
-add_executable(Theta
+add_executable(analyse
         src/Graph.cpp
         src/Dataloader.cpp
         src/Dataloader.hpp
-        src/ThetaSpanner.cpp
-        src/ThetaSpanner.hpp
-        src/DataWriter.cpp
-        src/DataWriter.h
+        src/ThetaSpannerAnalyser.cpp
+        src/Progressbar.h
+        src/MultiThetaAnalysis.h
+        src/MultiThetaAnalysis.cpp
 )
 
 add_executable(ThetaSpannerTest
@@ -80,7 +92,7 @@ add_executable(ThetaSpannerTest
 
 # Link OpenMP to your executable
 target_link_libraries(WSPDTest PRIVATE OpenMP::OpenMP_CXX)
-target_link_libraries(sizeTest PRIVATE OpenMP::OpenMP_CXX)
-target_link_libraries(GraphTest PRIVATE OpenMP::OpenMP_CXX)
+target_link_libraries(analyse PRIVATE OpenMP::OpenMP_CXX)
+target_link_libraries(MTA PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(ThetaSpannerTest PRIVATE OpenMP::OpenMP_CXX)
 

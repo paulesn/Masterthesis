@@ -334,7 +334,8 @@ void Graph::attach_lone_points() {
     for (int i=0; i<this->adj.size();i++){
         auto list = this->adj[i];
         if (list.empty()){
-            Edge edge = Edge(i, i-1, euklidian_distance(this->id_point_map[i], this->id_point_map[i-1]));
+            //Edge edge = Edge(i, i-1, euklidian_distance(this->id_point_map[i], this->id_point_map[i-1]));
+            Edge edge = Edge(i, i-1, 1);
             this->adj[i].emplace_back(edge);
         }
     }
