@@ -15,7 +15,7 @@ using namespace std;
  * @return
  */
 double normalize(double value) {
-    return std::round(value * 10000.0) / 10000.0;
+    return floor(value * 10000.0) / 10000.0;
 }
 
 
