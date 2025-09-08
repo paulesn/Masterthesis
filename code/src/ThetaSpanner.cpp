@@ -103,6 +103,7 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
     int edge_not_existing = 0;
 
     int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+    num_threads = 10; // TODO remove
 
     #pragma omp parallel for num_threads(num_threads) shared(number_of_added_edges, edge_existing, edge_not_existing, counter, graph, spanner, t) schedule(dynamic)
     for (auto edge_list: spanner->adj) {

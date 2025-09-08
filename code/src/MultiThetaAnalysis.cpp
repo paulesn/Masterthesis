@@ -35,7 +35,7 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path) 
     }
 
     int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
-
+    int num_threads = 10; // TODO remove
     ProgressBar progressBar;
     progressBar.start(base_graph.adj.size());
 
