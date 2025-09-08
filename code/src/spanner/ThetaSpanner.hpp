@@ -4,8 +4,8 @@
 
 #ifndef THETASPANNER_H
 #define THETASPANNER_H
-#include "Graph.hpp"
-#include "Quadtree.hpp"
+#include "../structure/Graph.hpp"
+#include "../structure/Quadtree.hpp"
 
 /**
  * This function creates a theta graph based on a input graph. The resulting graph only contains edges in the oroiginal graph
@@ -23,6 +23,6 @@ void dynamic_theta_update(Graph* graph, Graph* spanner, double t);
  * @param b
  * @return the angle in radians between the x-axis and the vector from a to b.
  */
-double angle_between(Point a, Point b);
+double angle_between(Pointc a, Pointc b);
 
 #endif //THETASPANNER_H

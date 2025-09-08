@@ -14,18 +14,18 @@ struct pair_hash {
 };
 
 // Define Point structure
-struct Point {
+struct Pointc {
     double x, y;
     int id; // Unique identifier for the point, -1 if not set
 
-    Point(double x_, double y_);
-    Point(double x_, double y_, int id_);
+    Pointc(double x_, double y_);
+    Pointc(double x_, double y_, int id_);
 
-    bool operator==(const Point& other) const;
-    bool operator<(const Point& other) const;
+    bool operator==(const Pointc& other) const;
+    bool operator<(const Pointc& other) const;
     int level; // level of CH
 
-    friend std::ostream& operator<<(std::ostream& os, const Point& p);
+    friend std::ostream& operator<<(std::ostream& os, const Pointc& p);
 };
 
 struct Edge {
@@ -42,11 +42,11 @@ struct Graph {
 public:
     explicit Graph(int nodes);
 
-    explicit Graph(const std::vector<Point>& points);
+    explicit Graph(const std::vector<Pointc>& points);
 
     explicit Graph(const Graph* graph);
 
-    std::vector<Point> id_point_map;
+    std::vector<Pointc> id_point_map;
     std::unordered_set<std::pair<int, int>, pair_hash> existance; // to check if an edge exists
 
     int number_of_edges = 0;
@@ -59,7 +59,7 @@ public:
         bool all = false
     );
 
-    double longestShortestPath(const std::vector<Point>& set, int source = -1);
+    double longestShortestPath(const std::vector<Pointc>& set, int source = -1);
 
     /**
      *
@@ -70,7 +70,7 @@ public:
      * @param s the seperation constant, the two sets are well-separated if the distance between them is at least s times the maximum of the inner radii
      * @return
      */
-    std::tuple<std::vector<int>,double> wspdCheck(std::vector<Point> &set1, std::vector<Point> &set2, double &set1_prec_dist, double &set2_prec_dist, double s=2);
+    std::tuple<std::vector<int>,double> wspdCheck(std::vector<Pointc> &set1, std::vector<Pointc> &set2, double &set1_prec_dist, double &set2_prec_dist, double s=2);
 
     int n;
     std::vector<std::vector<Edge>> adj;

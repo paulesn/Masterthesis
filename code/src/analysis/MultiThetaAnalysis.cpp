@@ -1,9 +1,10 @@
 #include <fstream>
 
-#include "../src/Dataloader.hpp"
+#include "../io/Dataloader.hpp"
 #include <omp.h>
-#include "Progressbar.h"
-#include "ThetaSpanner.hpp"
+#include "../daniel/Progressbar.h"
+#include "../daniel/Triangulation.h"
+#include "../spanner/ThetaSpanner.hpp"
 #include "MultiThetaAnalysis.h"
 
 
@@ -18,9 +19,11 @@ double normalize(double value) {
     return (value * 10000.0)/ 10000.0;
 }
 
+double euk_dist(Pointc p1, Pointc p2) {
+    return sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+}
 
-
-int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path) {
+int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path, string graph_path) {
     ///////////////////////////////////////////////////////////////////////////////////
     /// TEST random queries on the spanners
     /// analyse t-value
@@ -34,12 +37,15 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path) 
         t_histogram.push_back(vector<int>(100));
     }
 
+    Triangulation triangulation;
+    triangulation.readFromGraph(graph_path);
+
     int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
     num_threads = 10; // TODO remove
     ProgressBar progressBar;
     progressBar.start(base_graph.adj.size());
 
-    #pragma omp parallel for num_threads(num_threads) shared(spanner_graph, base_graph, t_values_sum, t_values_max) schedule(dynamic)
+    #pragma omp parallel for num_threads(num_threads) shared(spanner_graph, base_graph, t_values_sum, t_values_max, triangulation) schedule(dynamic)
     for (int source = 0; source < base_graph.adj.size(); source++) {
         progressBar.update(1);
         if (base_graph.adj[source].size() == 0) {
@@ -47,17 +53,17 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path) 
             continue;
         }
 
+        std::vector<GlobalID> targets = triangulation.oneToAllVisibility(source,false, std::vector<bool>(base_graph.adj.size(), true));
+
         // iterate over each target
-        for (int i = 0; i < base_graph.adj[source].size(); i++) {
+        for (int i = 0; i < targets.size(); i++) {
 
-            int target = base_graph.adj[source][i].target;
-
-
+            int target = targets[i];
             if (source > target) {
                 continue; // to avoid double checks in undirected graph
             }
 
-            double original_dist = base_graph.adj[source][i].weight;
+            double original_dist = euk_dist(base_graph.id_point_map.at(source), base_graph.id_point_map.at(target));
             auto spanner_theta_dist = numeric_limits<double>::infinity();
             double spanner_dist  = spanner_graph.dijkstra(source, target).second;
 

@@ -2,18 +2,18 @@
 // Created by sebastian on 13.06.25.
 //
 #include "ThetaSpanner.hpp"
-#include "Dataloader.hpp"
+#include "../io/Dataloader.hpp"
 #include <cmath>
 #include <csignal>
 #include <algorithm>
-#include "Graph.hpp"
-#include "Quadtree.hpp"
+#include "../structure/Graph.hpp"
+#include "../structure/Quadtree.hpp"
 # include <omp.h>
 #include <queue>
 #include <vector>
 
 
-double angle_between(Point a, Point b) {
+double angle_between(Pointc a, Pointc b) {
     double x_a = a.x;
     double y_a = a.y;
     double x_b = b.x;
@@ -49,14 +49,14 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
             std::cout.flush();
         }
 
-        Point source = graph->id_point_map[node_id];
+        Pointc source = graph->id_point_map[node_id];
         std::vector<bool> edges = std::vector(theta, false);
         std::vector<Edge> spanner_edges = std::vector<Edge>(theta);
         int edge_count = 0;
 
 
         for (Edge edge : graph->adj[node_id]) {
-            Point target = graph->id_point_map[edge.target];
+            Pointc target = graph->id_point_map[edge.target];
             // calculate angle between the edge and the x-axis
             double radians = angle_between(source, target);
             int zone = static_cast<int>(std::floor(radians/(2*M_PI/theta)));
@@ -117,7 +117,7 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
 
         // Assuming you have access to the source Point for the edges
         std::sort(edge_list.begin(), edge_list.end(), [&](const Edge& a, const Edge& b) {
-            Point source = spanner->id_point_map[a.source];
+            Pointc source = spanner->id_point_map[a.source];
             double angle_a = angle_between(source, graph->id_point_map[a.target]);
             double angle_b = angle_between(source, graph->id_point_map[b.target]);
             return angle_a < angle_b;
@@ -133,7 +133,8 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
             // check if the distance between the two edges is smaller than the two edges times t
             auto p1 = graph->id_point_map[edge.target];
             auto p2 = graph->id_point_map[edge2.target];
-            if (euklidian_distance(p1, p2) > t*(edge.weight + edge2.weight)) {
+            std::cerr << "I REMOVED STUFF HERE. THE CODE DOES NOT WORK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+            /**if (euklidian_distance(p1, p2) > t*(edge.weight + edge2.weight)) {
                 // if this distance is smaller than the two edges times the value t, we add the direct edge to the spanner graph
                 if (!spanner->addEdge(edge.source, edge2.target, edge.weight + edge2.weight)) {
                     // if the edge already exists, we skip it
@@ -142,7 +143,7 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
                     edge_not_existing++;
                 }
                 number_of_added_edges++;
-            }
+            }*/
         }
     }
     std::cout << std::endl;

@@ -2,11 +2,11 @@
 // Created by Sebastian Paule on 9/4/25.
 //
 
-#include "../src/Dataloader.hpp"
+#include "../io/Dataloader.hpp"
 #include <omp.h>
 
 #include "MultiThetaAnalysis.h"
-#include "Progressbar.h"
+#include "../daniel/Progressbar.h"
 
 
 using namespace std;
@@ -44,10 +44,10 @@ int main(int argc, char* argv[]) {
     ///////////////////////////////////////////////////////////////////////////////////
     /// LOAD THE GRAPHS
     ///////////////////////////////////////////////////////////////////////////////////
-    auto base_graph = get<1>(load_fmi(base_graph_path,  -1));
+    auto base_graph = load_coastline(base_graph_path);
     auto spanner_graph = get<1>(load_fmi(spanner_path,  -1));
 
-    analyse_spanner(base_graph, spanner_graph, csv_path);
+    analyse_spanner(base_graph, spanner_graph, csv_path, base_graph_path);
 }
 
 // TODO auch die worst case edge ausrechnen

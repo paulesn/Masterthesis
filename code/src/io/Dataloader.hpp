@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
-#include "Graph.hpp"
+#include "../structure/Graph.hpp"
 
 // Star data structure
 struct Star {
@@ -21,7 +21,7 @@ std::vector<Star> load_json(const std::string& filepath, int limit = -1);
 std::vector<std::string> split(const std::string& s, const std::string& delimiter);
 
 // Load a star system and graph from a file in FMI format
-std::tuple<std::vector<Point>, Graph> load_fmi(const std::string& filepath, int limit = -1, bool with_edges = true);
+std::tuple<std::vector<Pointc>, Graph> load_fmi(const std::string& filepath, int limit = -1, bool with_edges = true);
 
 Graph load_coastline(const std::string &filepath);
 #endif // DATALOADER_HPP

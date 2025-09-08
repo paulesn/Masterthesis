@@ -16,21 +16,21 @@ using namespace std;
 
 
 
-Point::Point(const double x_, const double y_): x(x_), y(y_), id(-1) {}
+Pointc::Pointc(const double x_, const double y_): x(x_), y(y_), id(-1) {}
 
-Point::Point(const double x_, const double y_, const int id_): x(x_), y(y_), id(id_) {}
+Pointc::Pointc(const double x_, const double y_, const int id_): x(x_), y(y_), id(id_) {}
 
-std::ostream& operator<<(std::ostream& os, const Point& p) {
+std::ostream& operator<<(std::ostream& os, const Pointc& p) {
     os << "(" << p.x << ", " << p.y << ")";
     return os;
 }
 
 
-bool Point::operator==(const Point &other) const {
+bool Pointc::operator==(const Pointc &other) const {
     return (x == other.x && y == other.y);
 }
 
-bool Point::operator<(const Point &other) const {
+bool Pointc::operator<(const Pointc &other) const {
     return (x < other.x || (x == other.x && y < other.y));
 }
 
@@ -39,7 +39,7 @@ Graph::Graph(int nodes) : n(nodes), adj(nodes){
         id_point_map.emplace_back(0.0, 0.0, i); // Initialize points with default coordinates and unique IDs
     }
 }
-Graph::Graph(const vector<Point>& points) : n(points.size()), adj(n) {
+Graph::Graph(const vector<Pointc>& points) : n(points.size()), adj(n) {
     id_point_map = points;
     for (int i = 0; i < n; ++i) {
         id_point_map[i].id = i; // Assign unique IDs to points
@@ -216,7 +216,7 @@ vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
 
 
 
-double ::Graph::longestShortestPath(const vector<Point>& set, int source) {
+double ::Graph::longestShortestPath(const vector<Pointc>& set, int source) {
     // check trivial cases
     if (set.empty()) {
         //cout << "Set is empty, cannot calculate longest shortest path." << endl;
@@ -260,7 +260,7 @@ double ::Graph::longestShortestPath(const vector<Point>& set, int source) {
  *
  * @return if two sets of nodes are well-separated by using the shortest path distance.
  */
-std::tuple<std::vector<int>,double> Graph::wspdCheck(std::vector<Point> &set1, std::vector<Point> &set2, double& set1_prec_dist, double& set2_prec_dist, double s) {
+std::tuple<std::vector<int>,double> Graph::wspdCheck(std::vector<Pointc> &set1, std::vector<Pointc> &set2, double& set1_prec_dist, double& set2_prec_dist, double s) {
 
     if (set1.empty() || set2.empty()) {
         //cout << "One of the sets is empty, cannot calculate WSPD." << endl;

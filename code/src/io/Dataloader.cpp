@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "Quadtree.hpp"
+#include "../structure/Quadtree.hpp"
 
 using namespace std;
 
@@ -41,9 +41,9 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
  * @param with_edges if true, the function will also load the edges of the graph, otherwise it will only load the nodes
  * @return
  */
-std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int limit, bool with_edges) {
+std::tuple<std::vector<Pointc>,Graph> load_fmi(const std::string &filepath, int limit, bool with_edges) {
     std::cout << "Loading fmi format from " << filepath << std::endl;
-    std::vector<Point> systems; // id, x, y, z, jump multiplicator
+    std::vector<Pointc> systems; // id, x, y, z, jump multiplicator
 
     // print current working directory
     std::ifstream file(filepath);
@@ -133,7 +133,7 @@ std::tuple<std::vector<Point>,Graph> load_fmi(const std::string &filepath, int l
 
 Graph load_coastline(const std::string &filepath) {
     std::cout << "Loading coastline format from " << filepath << std::endl;
-    std::vector<Point> points;
+    std::vector<Pointc> points;
     std::vector<tuple<int, int>> edges;
 
     // print current working directory
