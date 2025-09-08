@@ -116,5 +116,5 @@ int write_gf_with_graph(std::string path, int number_of_cones, std::vector<Point
 }
 
 int write_gf(std::string path, int number_of_cones, std::vector<Point> path_to_draw, int cone_base) {
-    write_gf_with_graph(path, number_of_cones, path_to_draw, cone_base, Graph(1));
+    return write_gf_with_graph(path, number_of_cones, path_to_draw, cone_base, Graph(1));
 }
