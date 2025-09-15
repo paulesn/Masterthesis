@@ -6,7 +6,7 @@
 #include <omp.h>
 
 #include "MultiThetaAnalysis.h"
-#include "../daniel/Progressbar.h"
+#include "../daniel/theta-graph/headers/Progressbar.h"
 
 
 using namespace std;

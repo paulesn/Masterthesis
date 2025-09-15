@@ -115,6 +115,35 @@ int write_gf_with_graph(std::string path, int number_of_cones, std::vector<Point
     return 1;
 }
 
+int write_fmi(std::string path, const Graph &g) {
+    auto out = std::ofstream(path);
+    if (!out.is_open()) {
+        std::cerr << "Failed to open file: " << path << std::endl;
+        return -1;
+    }
+    out << "# Id : MixWSPDThetaSpanner\n# Timestamp : 1508267560\n# Type : maxspeed\n# Revision : 1\n\n";
+    out << g.n << " " << g.number_of_edges << "\n";
+    int edges = 0;
+    for (const auto &edge_list : g.adj) {
+        edges += edge_list.size();
+        }
+    out << edges / 2 << "\n"; // undirected graph, so each edge is counted twice
+    for (auto node : g.id_point_map) {
+        out << node.id << " 0 " << node.x << " " << node.y << " 0\n";
+    }
+    for (const auto &edge_list : g.adj) {
+        for (const auto &edge : edge_list) {
+            if (edge.source < edge.target) {
+                // to avoid double edges in undirected graph
+                out << edge.source << " " << edge.target << " " << edge.weight << " 0 0\n";
+            }
+        }
+    }
+    out << std::endl;
+    out.close();
+    return 1;
+}
+
 int write_gf(std::string path, int number_of_cones, std::vector<Pointc> path_to_draw, int cone_base) {
     return write_gf_with_graph(path, number_of_cones, path_to_draw, cone_base, Graph(1));
 }

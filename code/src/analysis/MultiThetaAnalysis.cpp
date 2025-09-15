@@ -2,10 +2,11 @@
 
 #include "../io/Dataloader.hpp"
 #include <omp.h>
-#include "../daniel/Progressbar.h"
-#include "../daniel/Triangulation.h"
+#include "../daniel/theta-graph/headers/Progressbar.h"
+#include "../daniel/theta-graph/headers/Triangulation.h"
 #include "../spanner/ThetaSpanner.hpp"
 #include "MultiThetaAnalysis.h"
+#include "../daniel/theta-graph/headers/Timer.h"
 
 
 using namespace std;
@@ -29,9 +30,9 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path, 
     /// analyse t-value
     ///////////////////////////////////////////////////////////////////////////////////
 
-    vector<double> t_values_sum = vector<double>(base_graph.adj.size());
-    vector<double> t_values_max = vector<double>(base_graph.adj.size());
-    vector<int> edges_v = vector<int>(base_graph.adj.size());
+    vector<double> t_values_sum = vector<double>(base_graph.adj.size(), 0);
+    vector<double> t_values_max = vector<double>(base_graph.adj.size(), 0);
+    vector<int> edges_v = vector<int>(base_graph.adj.size(), 0);
     vector<vector<int>> t_histogram = vector<vector<int>>(); // histogram with 20 bins
     for (int i = 0; i < base_graph.adj.size(); i++) {
         t_histogram.push_back(vector<int>(100));
@@ -40,21 +41,37 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path, 
     Triangulation triangulation;
     triangulation.readFromGraph(graph_path);
 
+    cout << "Triangulation loaded";
+
     int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
-    num_threads = 10; // TODO remove
+    //num_threads = 10; // TODO remove limit
+
+    Timer timer;
+    timer.start();
     ProgressBar progressBar;
-    progressBar.start(base_graph.adj.size());
+    int max = base_graph.adj.size(); // TODO remove limit
+    progressBar.start(max);
 
     #pragma omp parallel for num_threads(num_threads) shared(spanner_graph, base_graph, t_values_sum, t_values_max, triangulation) schedule(dynamic)
-    for (int source = 0; source < base_graph.adj.size(); source++) {
+    for (int source = 0; source < max; source++) {
+
+
         progressBar.update(1);
         if (base_graph.adj[source].size() == 0) {
             std::cout << "Node " << source << " has no edges in the base graph. Skipping." << std::endl;
             continue;
         }
 
-        std::vector<GlobalID> targets = triangulation.oneToAllVisibility(source,false, std::vector<bool>(base_graph.adj.size(), true));
+        std::vector<GlobalID> targets = triangulation.oneToAllVisibility(source, false);
 
+        if (targets.size() == 0) {
+            std::cerr << "Node " << source << " has no visible targets in the triangulation. Skipping." << std::endl;
+            continue;
+        }
+        if (spanner_graph.adj[source].size() == 0) {
+            std::cerr << "Node " << source << " has no edges in the spanner graph. Skipping." << std::endl;
+            continue;
+        }
         // iterate over each target
         for (int i = 0; i < targets.size(); i++) {
 
@@ -69,24 +86,23 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path, 
 
             double t_value = spanner_dist/original_dist;
 
-            #pragma omp critical
-            {
-                t_values_sum[source] += t_value;
-                edges_v[source] += 1;
-                if (t_value > t_values_max[source]) {
-                    t_values_max[source] = t_value;
-                }
-                int histogram_index = std::min(static_cast<int>((t_value-1) * 1000), 99); // cap at 10.0
-                t_histogram[i][histogram_index] += 1;
+
+            t_values_sum[source] += t_value;
+            edges_v[source] += 1;
+            if (t_value > t_values_max[source]) {
+                t_values_max[source] = t_value;
             }
+            int histogram_index = std::min(static_cast<int>((t_value-1) * 1000), 99); // cap at 10.0
+            t_histogram[i][histogram_index] += 1;
+
 
             // sanity checks
             if (normalize(spanner_dist) < normalize(original_dist)) {
-                std::cout << "ERROR: Spanner distance is less than original distance for source " << source << " and target " << target << std::endl;
-                std::cout << "Original distance: " << original_dist << ", Spanner distance: " << spanner_dist << std::endl;
+                //std::cout << "ERROR: Spanner distance is less than original distance for source " << source << " and target " << target << std::endl;
+                //std::cout << "Original distance: " << original_dist << ", Spanner distance: " << spanner_dist << std::endl;
             }
             if (spanner_dist == numeric_limits<double>::infinity()) {
-                std::cout << "ERROR: Spanner distance is infinity for source " << source << " and target " << target << std::endl;
+                //std::cout << "ERROR: Spanner distance is infinity for source " << source << " and target " << target << std::endl;
             }
         }
     }

@@ -52,6 +52,10 @@ public:
     int number_of_edges = 0;
 
     bool addEdge(int u, int v, double w, bool undirected = true);
+    bool hasEdge(int u, int v) {
+        if (u < 0 || u >= n || v < 0 || v >= n) return false;
+        return existance.find({u, v}) != existance.end();
+    }
     std::pair<std::vector<int>, double> dijkstra(int src, int dest, double maximum=-1);
     std::vector<std::pair<std::vector<int>, double>> multiSourceMultiTargetDijkstra(
         const std::vector<int>& sources,

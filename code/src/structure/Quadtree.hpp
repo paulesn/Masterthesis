@@ -135,6 +135,18 @@ Graph wspd(const Quadtree* tree, double s, Graph* g);
 // WSPD using shortest-path distances from the Graph
 Graph wspd_spd(const Quadtree* tree, double s, Graph g);
 
+/**
+ * Creates a WSPD spanner based on visibility. The well separated sets are choosen based on euklidian distance
+ * but edges are only added iff there is an visibility edge between the two sets in the given visibility graph.
+ * Therefore this graph alone is not gurantieed to be a spanner of the original as it can be disconnected.
+ *
+ * @param tree the quadtree to use
+ * @param s the seperation factor to use
+ * @param coastlines the coastline graph to base the visibility on
+ * @return a wspd spanner based on visibility
+ */
+Graph wspd_for_visibility(const Quadtree* tree, double s, Graph* vis_graph);
+
 
 
 #endif // QUADTREE_HPP

@@ -1,5 +1,5 @@
 #include "Quadtree.hpp"
-#include "ThetaSpanner.hpp"
+#include "../spanner/ThetaSpanner.hpp"
 
 #include <cassert>
 #include <chrono>
@@ -16,11 +16,11 @@
 
 using namespace std;
 
-std::size_t PointHash::operator()(const Point &p) const {
+std::size_t PointHash::operator()(const Pointc &p) const {
     return std::hash<int>()(p.x) ^ (std::hash<int>()(p.y) << 1);
 }
 
-double euklidian_distance(Point a, Point b) {
+double euklidian_distance(Pointc a, Pointc b) {
     auto dx = abs(a.x - b.x);
     auto dy = abs(a.y - b.y);
     return sqrt(dx*dx + dy*dy);
@@ -71,12 +71,12 @@ double euklidian_distance(Point a, Point b) {
     delete SO;
 }
 
-void ::QuadtreeNode::insert(Point s) {
+void ::QuadtreeNode::insert(Pointc s) {
     points.emplace_back(s);
     insertInternal(s);
 }
 
-bool ::QuadtreeNode::area_contains(Point s) const {
+bool ::QuadtreeNode::area_contains(Pointc s) const {
     const double x = s.x;
     const double y = s.y;
     return x >= (cX - height) && x <= (cX + height)
@@ -85,10 +85,10 @@ bool ::QuadtreeNode::area_contains(Point s) const {
 
 bool ::QuadtreeNode::intercept_rect(double x, double y, double h) const {
     // return true if the cell contains a corner of the other rect
-    if (area_contains(Point(x+h, y+h))) return true;
-    if (area_contains(Point(x+h, y-h))) return true;
-    if (area_contains(Point(x-h, y+h))) return true;
-    if (area_contains(Point(x-h, y-h))) return true;
+    if (area_contains(Pointc(x+h, y+h))) return true;
+    if (area_contains(Pointc(x+h, y-h))) return true;
+    if (area_contains(Pointc(x-h, y+h))) return true;
+    if (area_contains(Pointc(x-h, y-h))) return true;
 
     // check if the other rect contains one corner of the cell
     if (x - h > cX + height || x + h < cX - height) return false;
@@ -134,11 +134,11 @@ double x_on_angle_ray(double x, double y, double theta, double y_new) {
     return x_new;
 }
 
-vector<Point> QuadtreeNode::get_all_points() const {
+vector<Pointc> QuadtreeNode::get_all_points() const {
     if (is_leaf) {
         return points;
     }
-    vector<Point> all_points;
+    vector<Pointc> all_points;
     if (NW) {
         auto nw_points = NW->get_all_points();
         all_points.insert(all_points.end(), nw_points.begin(), nw_points.end());
@@ -158,7 +158,7 @@ vector<Point> QuadtreeNode::get_all_points() const {
     return all_points;
 }
 
-bool QuadtreeNode::contains(const Point &p) const {
+bool QuadtreeNode::contains(const Pointc &p) const {
     if (!is_leaf) {
         if (NW->area_contains(p)) return NW->contains(p);
         if (NO->area_contains(p)) return NO->contains(p);
@@ -183,12 +183,12 @@ std::vector<int> QuadtreeNode::circle_intersect(double x, double y, double r) co
     // check for each corner of the rectangle if it is inside the circle
     bool point_inside = false;
     for (const auto& corner : {
-        Point(cX + height, cY + height),
-        Point(cX + height, cY - height),
-        Point(cX - height, cY + height),
-        Point(cX - height, cY - height)
+        Pointc(cX + height, cY + height),
+        Pointc(cX + height, cY - height),
+        Pointc(cX - height, cY + height),
+        Pointc(cX - height, cY - height)
     }) {
-        if (euklidian_distance(corner, Point(x, y)) <= r) {
+        if (euklidian_distance(corner, Pointc(x, y)) <= r) {
             point_inside = true;
             break; // At least one corner is inside the circle
         }
@@ -201,7 +201,7 @@ std::vector<int> QuadtreeNode::circle_intersect(double x, double y, double r) co
     vector<int> result = {};
     if (is_leaf) {
         for (const auto& pt : points) {
-            if (euklidian_distance(pt, Point(x, y)) <= r) {
+            if (euklidian_distance(pt, Pointc(x, y)) <= r) {
                 result.emplace_back(pt.id); // Return the id of the point if it is within the circle
             }
         }
@@ -220,7 +220,7 @@ std::vector<int> QuadtreeNode::circle_intersect(double x, double y, double r) co
     return result; // Return the ids of points within the circle from all children
 }
 
-void QuadtreeNode::insertInternal(Point s) {
+void QuadtreeNode::insertInternal(Pointc s) {
     // 1) If already split, forward to exactly one child
     if (!is_leaf) {
         if (NW->area_contains(s)) {NW->insert(s); return;}
@@ -252,7 +252,7 @@ void QuadtreeNode::insertInternal(Point s) {
 
 ::Quadtree::Quadtree(double height_): root(0,0, height_, nullptr), height(height_), pointSet() {}
 
-bool ::Quadtree::insert(Point p) {
+bool ::Quadtree::insert(Pointc p) {
     static int counter = 0;
     //std::cout << counter << std::endl;
     counter++;
@@ -281,7 +281,7 @@ bool ::Quadtree::insert(Point p) {
 
 void Quadtree::print() const { std::cout << root.QuadtreeNode::rec_string(); }
 
-std::vector<Point> Quadtree::get_all_points() const {
+std::vector<Pointc> Quadtree::get_all_points() const {
     return root.get_all_points();
 }
 
@@ -371,7 +371,7 @@ Graph wspd(const Quadtree* tree, const double s, Graph* g) {
         double other_radius = 0.0;
         if (self->is_leaf) radius = sqrt(self->height*self->height)*sqrt(2);
         if (other->is_leaf) other_radius = sqrt(other->height*other->height)*sqrt(2);
-        auto dist = euklidian_distance(Point(self->cX, self->cY), Point(other->cX, other->cY));
+        auto dist = euklidian_distance(Pointc(self->cX, self->cY), Pointc(other->cX, other->cY));
         if (max(radius, other_radius)*s < dist) {
             if (!self->points.empty() && !other->points.empty()) {
                 // if the two nodes are well separated, add the first point of each set as a pair
@@ -515,4 +515,105 @@ Graph wspd_spd(const Quadtree* tree, const double s, Graph g) {
     cout << "Skipped because null pointer in add: " << skipped_add_because_nlptr << endl;
     return spanner;
 
+}
+
+Graph wspd_for_visibility(const Quadtree* tree, double s, Graph* vis_graph) {
+    auto root = tree->root;
+    Graph spanner = Graph(vis_graph->id_point_map.size());
+
+    std::vector<std::tuple<QuadtreeNode*, QuadtreeNode*>> parings_todo;
+    std::set<std::pair<QuadtreeNode*, QuadtreeNode*>> seen;
+    parings_todo.emplace_back(&root, &root);
+
+
+    int skipped_because_nlptr = 0;
+    int skipped_because_duplicate = 0;
+    int skipped_add_because_nlptr = 0;
+
+    int counter = 0;
+    while (true){
+        counter++;
+        if (counter %100000 == 0) {
+            cout << "Processed " << counter << " pairs. Current size of parings_todo: " << parings_todo.size() << "                                      \r";
+        }
+
+        // loop end condition
+        if (parings_todo.empty()) break;
+
+        // get next pair
+        auto self = get<0>(parings_todo.back());
+        auto other = get<1>(parings_todo.back());
+
+        parings_todo.pop_back();
+
+
+        // check the self case
+        if (self == other) {
+            if (self->is_leaf) {
+                // if the two nodes are the same return nothing
+                continue;
+            }
+            parings_todo.emplace_back(self->NW, self->NW);
+            parings_todo.emplace_back(self->NW, self->NO);
+            parings_todo.emplace_back(self->NW, self->SW);
+            parings_todo.emplace_back(self->NW, self->SO);
+
+            parings_todo.emplace_back(self->NO, self->NO);
+            parings_todo.emplace_back(self->NO, self->SW);
+            parings_todo.emplace_back(self->NO, self->SO);
+
+            parings_todo.emplace_back(self->SW, self->SW);
+            parings_todo.emplace_back(self->SW, self->SO);
+
+            parings_todo.emplace_back(self->SO, self->SO);
+            continue;
+        }
+
+        // check for well separation
+        // Case 1 - both nodes are leaf nodes
+        if (self->is_leaf && other->is_leaf) {
+            // if the two nodes are the same return nothing
+            if (self != other && !self->points.empty() && !other->points.empty()) {
+                spanner.addEdge(self->points[0].id, other->points[0].id, euklidian_distance(self->points[0], other->points[0]));
+            }
+            continue;
+        }
+
+        // Case 2 - nodes are well separated
+        // use the default euklidian distance check
+        double radius = 0.0;
+        double other_radius = 0.0;
+        if (self->is_leaf) radius = sqrt(self->height*self->height)*sqrt(2);
+        if (other->is_leaf) other_radius = sqrt(other->height*other->height)*sqrt(2);
+        auto dist = euklidian_distance(Pointc(self->cX, self->cY), Pointc(other->cX, other->cY));
+        if (max(radius, other_radius)*s < dist) {
+            if (!self->points.empty() && !other->points.empty()) {
+                // if the two nodes are well separated, we can check if there is an visibility edge between the two points
+                for (auto source : self->points) {
+                    for (auto target : other->points) {
+                        if (vis_graph->hasEdge(source.id, target.id)) {
+                            spanner.addEdge(source.id, target.id, euklidian_distance(source, target));
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+
+
+
+        // Choose larger for further splitting
+        QuadtreeNode* larger = (self->height > other->height) ? self : other;
+        QuadtreeNode* smaller = (self->height > other->height) ? other : self;
+        if (larger->is_leaf) std::swap(larger, smaller);
+
+        for (auto* child : {larger->NW, larger->NO, larger->SW, larger->SO}) {
+            if (child) parings_todo.emplace_back(smaller, child);
+        }
+    }
+    cout << parings_todo.size() << endl;
+    cout << "Skipped because null pointer: " << skipped_because_nlptr << endl;
+    cout << "Skipped because duplicate: " << skipped_because_duplicate << endl;
+    cout << "Skipped because null pointer in add: " << skipped_add_because_nlptr << endl;
+    return spanner;
 }

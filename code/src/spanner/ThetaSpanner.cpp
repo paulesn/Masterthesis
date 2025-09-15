@@ -60,7 +60,9 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
             // calculate angle between the edge and the x-axis
             double radians = angle_between(source, target);
             int zone = static_cast<int>(std::floor(radians/(2*M_PI/theta)));
-            if (zone >= theta) zone = theta - 1;
+            if (zone >= theta) {
+                zone = theta - 1;
+            }
 
             // if no edge is already in the zone, add it to the spanner
             if (!edges[zone]) {
@@ -72,7 +74,7 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
                 spanner_edges[zone] = edge;
             }
         }
-        for (int i = 0; i < theta; i++) { // TODO warum hat jeder Knoten nur eine Edge
+        for (int i = 0; i < theta; i++) {
             if (edges[i]) {
                 // add the edge to the spanner graph
                 spanner.addEdge(node_id, spanner_edges[i].target, spanner_edges[i].weight);

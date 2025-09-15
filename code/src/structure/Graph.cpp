@@ -136,10 +136,13 @@ pair<vector<int>, double> Graph::dijkstra(int src, int dest, double maximum) {
     }
 
     // Reconstruct path from dest to src
-    for (int at = dest; at != -1; at = prev[at]) {
-        path.push_back(at);
+    if (prev.size() == 0) {
+        return {path, INF};
     }
-    reverse(path.begin(), path.end());
+    //for (int at = dest; at != -1; at = prev[at]) {
+    //    path.push_back(at);
+    //}
+    //reverse(path.begin(), path.end());
 
     return {path, dist[dest]};
 }
