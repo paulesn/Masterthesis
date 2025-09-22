@@ -15,5 +15,6 @@ double normalize(double value);
  * @return
  */
 int analyse_spanner(Graph base_graph, Graph spanner_graph, std::string csv_out_path, std::string graph_path);
+std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner_graph, std::string csv_out_path, std::string graph_path, double percent);
 
 #endif //MULTITHETAANALYSIS_H

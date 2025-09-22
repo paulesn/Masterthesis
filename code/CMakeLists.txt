@@ -43,6 +43,64 @@ add_executable(analyse
 
 )
 
+add_executable(analyseVis
+        src/analysis/VisGraphAnalysis.cpp
+        src/analysis/MultiThetaAnalysis.cpp
+
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
+
+        src/spanner/ThetaSpanner.hpp
+        src/spanner/ThetaSpanner.cpp
+
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+
+
+
+        src/analysis/MultiThetaAnalysis.h
+
+
+)
+
+add_executable(ch
+        src/ch_idea/CH_idea.cpp
+        src/analysis/MultiThetaAnalysis.cpp
+
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
+
+        src/spanner/ThetaSpanner.hpp
+        src/spanner/ThetaSpanner.cpp
+
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+
+
+
+        src/analysis/MultiThetaAnalysis.h
+)
+
 add_executable(mixWspdThetaSpanner
         src/io/DataWriter.cpp
         src/io/DataWriter.h
@@ -64,4 +122,14 @@ target_link_libraries(analyse OpenMP::OpenMP_CXX)
 target_link_libraries(analyse CGAL::CGAL)
 target_link_libraries(analyse ${Boost_LIBRARIES})
 
+target_link_libraries(analyseVis OpenMP::OpenMP_CXX)
+target_link_libraries(analyseVis CGAL::CGAL)
+target_link_libraries(analyseVis ${Boost_LIBRARIES})
+
 target_link_libraries(mixWspdThetaSpanner OpenMP::OpenMP_CXX)
+target_link_libraries(mixWspdThetaSpanner CGAL::CGAL)
+target_link_libraries(mixWspdThetaSpanner ${Boost_LIBRARIES})
+
+target_link_libraries(ch OpenMP::OpenMP_CXX)
+target_link_libraries(ch CGAL::CGAL)
+target_link_libraries(ch ${Boost_LIBRARIES})
