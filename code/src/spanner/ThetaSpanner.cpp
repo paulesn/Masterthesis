@@ -149,6 +149,7 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
         }
     }
     std::cout << std::endl;
+    std::cout << "The Spanner has now " << spanner->number_of_edges << " edges." << std::endl;
     std::cout << "Updated theta spanner graph with " << number_of_added_edges << " new edges." << std::endl;
     std::cout << "Existing edges: " << edge_existing << ", Not existing edges: " << edge_not_existing << std::endl;
     std::cout << "Total edges in spanner graph: " << spanner->number_of_edges << std::endl;

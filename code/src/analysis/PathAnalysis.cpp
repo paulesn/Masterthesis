@@ -27,8 +27,8 @@ int main(int argc, char* argv[]) {
     string base_graph_path;
     string spanner_path;
     string csv_path;
-    double percent = -1.0;
-    int theta = 128;
+    int paths = -1;
+    int theta = 24;
 
 
     for (int i = 1; i < argc; i++) {
@@ -44,12 +44,15 @@ int main(int argc, char* argv[]) {
             csv_path = argv[++i];
             std::cout << "CSV output path: " << csv_path << std::endl;
         }else if (arg == "-p" && i + 1 < argc) {
-            percent = stod(argv[++i]);
-            std::cout << "percent of worst edges to add to spanner: " << percent << std::endl;
+            paths = stoi(argv[++i]);
+            std::cout << "number of paths to check: " << paths << std::endl;
+        }else if (arg == "-t" && i + 1 < argc) {
+            theta = stoi(argv[++i]);
+            std::cout << "theta for spanner: " << theta << std::endl;
         }
     }
 
-    if (spanner_path.empty() || base_graph_path.empty() || percent < 0) {
+    if (spanner_path.empty() || base_graph_path.empty() || paths < 0) {
         std::cerr << "Usage: " << argv[0] << " -sg <string> -vg <string> -csv <string> -p <double>\n";
         for (int i = 0; i < argc; i++) std::cerr << " " << argv[i];
         return 1;
@@ -61,13 +64,8 @@ int main(int argc, char* argv[]) {
     auto base_graph = get<1>(load_fmi(base_graph_path, -1));
     auto spanner_graph = create_theta_spanner_graph(&base_graph, theta); //get<1>(load_fmi(spanner_path,  -1));
 
-    vector<Edge> edges_to_add = analyse_spanner_with_vis_graph(base_graph, spanner_graph, csv_path+"-"+to_string(theta)+".csv", "../../data/all_edges-"+to_string(theta)+".csv", percent);
-    for (Edge edge: edges_to_add) {
-        spanner_graph.addEdge(edge.source, edge.target, edge.weight, true);
-    }
-    cout << "Added " << edges_to_add.size() << " edges to the spanner." << endl;
-    string new_csv_path = csv_path.substr(0, csv_path.find_last_of('.')) + "_with_worst_edges.csv";
-    analyse_spanner_with_vis_graph(base_graph, spanner_graph, new_csv_path, "../../data/all_edges-"+to_string(theta)+"-"+to_string(percent)+".csv", 0.0);
+    analyse_random_paths_with_vis_graph(base_graph, spanner_graph, csv_path, paths, theta);
+
 }
 
 

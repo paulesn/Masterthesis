@@ -566,6 +566,8 @@ siFm
 sSbZf
 sYOP
 sebastian
+sized
+sortiert
 and
 an
 all
@@ -930,6 +932,9 @@ aSd
 alSV
 aONnm
 applicable
+axis
+alle
+auf
 target
 to
 the
@@ -1462,6 +1467,13 @@ wzw
 wzp
 wFm
 working
+worse
+wäre
+wie
+werden
+wurden
+wurde
+wert
 draw
 defined
 distance
@@ -1770,6 +1782,9 @@ desired
 debug
 directory
 duplicate
+dieser
+dem
+diesen
 edge
 edges
 each
@@ -2059,6 +2074,11 @@ eQr
 exM
 ensures
 exit
+extrem
+erreichen
+extra
+eine
+einmal
 from
 found
 for
@@ -2348,6 +2368,9 @@ family
 fmi
 fallbacks
 finished
+folgende
+freq
+folgenden
 We
 With
 While
@@ -2578,6 +2601,7 @@ WWlDts
 WlU
 WSQ
 WSPDTest
+Wert
 choose
 closest
 condition
@@ -2923,6 +2947,8 @@ convex
 code
 cmake
 completed
+constructions
+correlation
 longest
 list
 length
@@ -3223,6 +3249,7 @@ ldpCSoC
 lla
 llS
 lTS
+linie
 in
 identify
 its
@@ -3560,6 +3587,8 @@ ixA
 include
 ich
 inf
+ihrem
+ihren
 our
 on
 of
@@ -3807,6 +3836,7 @@ ooa
 obtain
 obtained
 obstacle
+originialen
 path
 point
 points
@@ -4409,6 +4439,7 @@ mxi
 mWY
 mBx
 mean
+müssen
 replace
 range
 represented
@@ -4702,6 +4733,8 @@ rZj
 rke
 rwjU
 result
+replacing
+rote
 new
 no
 next
@@ -4953,6 +4986,8 @@ nNZS
 nDejrq
 nWI
 noch
+nach
+nachdem
 Repeat
 Remove
 Requirements
@@ -5596,6 +5631,7 @@ jWF
 jGja
 jNj
 jHr
+jeden
 Stop
 Speedup
 Specifically
@@ -6353,6 +6389,10 @@ PaPa
 PEM
 Point
 Process
+Plot
+Plots
+Pfaden
+Pearson
 know
 known
 kd
@@ -6856,6 +6896,10 @@ hXA
 hDDg
 habe
 home
+hinzufügt
+hinzugefügt
+heatmap
+häufig
 The
 Therefore
 Then
@@ -7081,6 +7125,7 @@ TIVMs
 Trh
 TyB
 Teil
+Tabelle
 graph
 grid
 given
@@ -7320,6 +7365,9 @@ gcs
 gOT
 gß
 garden
+gibt
+gewisses
+gesamtgröße
 Lemma
 LY
 Linearized
@@ -7568,6 +7616,7 @@ LTF
 LTlRi
 Loading
 Loaded
+Linie
 Each
 EtNgqSCW
 EDSM
@@ -8037,6 +8086,9 @@ vINnJY
 vAD
 visible
 verstanden
+vis
+viel
+verwendet
 For
 Formal
 Factor
@@ -8292,6 +8344,7 @@ Fopt
 FRf
 Folv
 Figure
+Fall
 As
 Algorithm
 Add
@@ -8568,6 +8621,7 @@ Aqt
 AWf
 ANg
 Azt
+Alles
 In
 If
 Info
@@ -9604,6 +9658,7 @@ CUqw
 Current
 Creating
 Created
+Case
 Optimization
 Oy
 OQ
@@ -10114,6 +10169,8 @@ Dkqc
 Dwu
 Den
 Documents
+Die
+Diese
 Here
 Handwritten
 Hph
@@ -10343,6 +10400,7 @@ Hrp
 HgrOFNgBtR
 HRO
 HLK
+Hier
 Key
 KI
 Kc
@@ -10563,6 +10621,8 @@ KJZ
 KDH
 KIb
 KuT
+Kanten
+Kante
 query
 qj
 qr
@@ -11051,6 +11111,7 @@ BYH
 Brc
 BYG
 BkOT
+Blaue
 xref
 xC
 xJo
@@ -11510,6 +11571,7 @@ VrRA
 VErt
 Vhn
 VqX
+Value
 Jy
 JUf
 JY
@@ -13085,6 +13147,9 @@ zkj
 zuam
 zmo
 zones
+zeigt
+zum
+zufälligen
 UJ
 Ui
 Using

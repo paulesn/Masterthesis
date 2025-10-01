@@ -129,7 +129,7 @@ pair<vector<int>, double> Graph::dijkstra(int src, int dest, double maximum) {
         }
     }
 
-    vector<int> path;
+    vector<int> path = {};
     if (dist[dest] == INF) {
         // No path found
         return {path, INF};
@@ -139,10 +139,14 @@ pair<vector<int>, double> Graph::dijkstra(int src, int dest, double maximum) {
     if (prev.size() == 0) {
         return {path, INF};
     }
-    //for (int at = dest; at != -1; at = prev[at]) {
-    //    path.push_back(at);
-    //}
-    //reverse(path.begin(), path.end());
+    for (int at = dest; at != -1; at = prev[at]) {
+        if (at < 0 || at >= n) {
+            // Invalid node index encountered, return empty path
+            std::cerr << "Invalid node index encountered during path reconstruction: " << at << std::endl;
+        }
+        path.push_back(at);
+    }
+    reverse(path.begin(), path.end());
 
     return {path, dist[dest]};
 }
