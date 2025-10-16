@@ -103,6 +103,27 @@ add_executable(analysePaths
 
 )
 
+add_executable(thetaComp
+        src/ch_idea/theta_comparision.cpp
+        src/analysis/MultiThetaAnalysis.cpp
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
+        src/spanner/ThetaSpanner.hpp
+        src/spanner/ThetaSpanner.cpp
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+        src/analysis/MultiThetaAnalysis.h
+)
+
 add_executable(ch
         src/ch_idea/CH_idea.cpp
         src/analysis/MultiThetaAnalysis.cpp
@@ -167,3 +188,7 @@ target_link_libraries(ch ${Boost_LIBRARIES})
 target_link_libraries(analysePaths OpenMP::OpenMP_CXX)
 target_link_libraries(analysePaths CGAL::CGAL)
 target_link_libraries(analysePaths ${Boost_LIBRARIES})
+
+target_link_libraries(thetaComp OpenMP::OpenMP_CXX)
+target_link_libraries(thetaComp CGAL::CGAL)
+target_link_libraries(thetaComp ${Boost_LIBRARIES})

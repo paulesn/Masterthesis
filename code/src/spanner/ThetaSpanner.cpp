@@ -11,6 +11,7 @@
 # include <omp.h>
 #include <queue>
 #include <vector>
+#include "../daniel/theta-graph/headers/Triangulation.h"
 
 
 double angle_between(Pointc a, Pointc b) {
@@ -34,11 +35,12 @@ struct EdgeWeightCompare {
     }
 };
 
-Graph create_theta_spanner_graph(Graph* graph, const int theta) {
+Graph create_theta_spanner_graph(Graph* graph, const int theta, bool early_break) {
     Graph spanner (graph->id_point_map);
     int counter = 0;
     int fallback_counter = 0;
     std::cout << "Creating theta spanner graph with " << theta << " zones per node." << std::endl << ">";
+    if (early_break) std::cerr << "ATTENTION: early_break is active. This fails to create spanner if the adj list is not sorted by edge length!" << std::endl;
 
     for (int node_id= 0; node_id < graph->adj.size(); node_id++) {
         counter++;
@@ -53,6 +55,7 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
         std::vector<bool> edges = std::vector(theta, false);
         std::vector<Edge> spanner_edges = std::vector<Edge>(theta);
         int edge_count = 0;
+        int filled_zones = 0;
 
 
         for (Edge edge : graph->adj[node_id]) {
@@ -68,6 +71,8 @@ Graph create_theta_spanner_graph(Graph* graph, const int theta) {
             if (!edges[zone]) {
                 edges[zone] = true;
                 spanner_edges[zone] = edge;
+                filled_zones++;
+                if (early_break && filled_zones == theta) break; // if all zones are filled, we can stop
             }
             else if (edge.weight < spanner_edges[zone].weight) {
                 // if the edge is shorter than the existing edge in the zone, replace it
@@ -154,4 +159,6 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
     std::cout << "Existing edges: " << edge_existing << ", Not existing edges: " << edge_not_existing << std::endl;
     std::cout << "Total edges in spanner graph: " << spanner->number_of_edges << std::endl;
 }
+
+
 

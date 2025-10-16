@@ -385,44 +385,43 @@ void analyse_random_paths_with_vis_graph(Graph base_graph, Graph spanner_graph, 
             auto edge_out_stream = ofstream("../../data/all_edges-" + to_string(theta)+".csv", ios_base::app);
             vector<pair<int, int>> all_logged_edges;
             vector<int> all_logged_nodes;
-            //edge_out_stream << "source,target,t_value,original_distance\n";
 
-            for (int i = 0; i < t_values_sum.size(); i++) {
-                if (base_graph.adj[i].size() > 0) {
-                    t_values_all_sum += t_values_sum[i];
-                    edges += edges_v[i];
-                    if (t_values_max[i] > max_t_all) {
-                        max_t_all = t_values_max[i];
+                for (int i = 0; i < t_values_sum.size(); i++) {
+                    if (base_graph.adj[i].size() > 0) {
+                        t_values_all_sum += t_values_sum[i];
+                        edges += edges_v[i];
+                        if (t_values_max[i] > max_t_all) {
+                            max_t_all = t_values_max[i];
+                        }
+                        for (auto e: edge_log[i]) {
+                            all_logged_edges.push_back(e);
+                        }
+                        for (auto n: node_log[i]) {
+                            all_logged_nodes.push_back(n);
+                        }
+                        // write all edges to file
+                        //edge_out_stream << all_edges[i];
                     }
-                    for (auto e: edge_log[i]) {
-                        all_logged_edges.push_back(e);
-                    }
-                    for (auto n: node_log[i]) {
-                        all_logged_nodes.push_back(n);
-                    }
-                    // write all edges to file
-                    //edge_out_stream << all_edges[i];
                 }
-            }
-            edge_out_stream.close();
-            // edge and node log to file
 
-            auto edge_log_stream = ofstream("../../data/logged_edges-" + to_string(theta)+".csv");
-            for (auto e: all_logged_edges) {
-                if (e.first < 0 || e.second < 0) {
-                    //std::cerr << "ERROR: Logged edge contains node that is less than 0: " << e.first << ", " << e.second << std::endl;
+                if (csv_out_path != "-1") {
+                auto edge_log_stream = ofstream("../../data/logged_edges-" + to_string(theta)+".csv");
+                for (auto e: all_logged_edges) {
+                    if (e.first < 0 || e.second < 0) {
+                        //std::cerr << "ERROR: Logged edge contains node that is less than 0: " << e.first << ", " << e.second << std::endl;
+                    }
+                    edge_log_stream << e.first << "," << e.second << "\n";
                 }
-                edge_log_stream << e.first << "," << e.second << "\n";
-            }
-            edge_log_stream.close();
-            auto node_log_stream = ofstream("../../data/logged_nodes-" + to_string(theta)+".csv");
-            for (auto n: all_logged_nodes) {
-                if (n < 0) {
-                    //std::cerr << "ERROR: Logged node is less than 0: " << n << std::endl;
+                edge_log_stream.close();
+                auto node_log_stream = ofstream("../../data/logged_nodes-" + to_string(theta)+".csv");
+                for (auto n: all_logged_nodes) {
+                    if (n < 0) {
+                        //std::cerr << "ERROR: Logged node is less than 0: " << n << std::endl;
+                    }
+                    node_log_stream << n << "\n";
                 }
-                node_log_stream << n << "\n";
+                node_log_stream.close();
             }
-            node_log_stream.close();
 
 
             cout << "----------------------------------------------------------------------------------" << endl;
@@ -430,14 +429,8 @@ void analyse_random_paths_with_vis_graph(Graph base_graph, Graph spanner_graph, 
             cout << "----------------------------------------------------------------------------------" << endl;
             cout << "Average t-value: " << normalize(t_values_all_sum/edges) << endl;
             cout << "Max t-value: " << normalize(max_t_all) << endl;
-            cout << "Number of edges: " << edges << endl;
+            cout << "Number of edges tested: " << edges << endl;
+            cout << "size of the spanner: " << spanner_graph.number_of_edges << endl;
             cout << "----------------------------------------------------------------------------------" << endl;
 
-            // TODO store full histogramm in csv
-            //auto csv_out_stream = ofstream(csv_out_path);
-            //csv_out_stream << "t_value,frequency" << endl;
-            //for (int i = 0; i < full_histogramm.size(); i++) {
-            //    csv_out_stream << normalize(1.0 + i * 0.001) << "," << full_histogramm[i] << endl;
-            //}
-            //csv_out_stream.close();
         }

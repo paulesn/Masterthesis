@@ -52,7 +52,7 @@ public:
 
     int number_of_edges = 0;
 
-    bool addEdge(int u, int v, double w, bool undirected = true);
+    bool addEdge(int u, int v, double w, bool safe = true);
     bool hasEdge(int u, int v) {
         if (u < 0 || u >= n || v < 0 || v >= n) return false;
         return existance.find({u, v}) != existance.end();
@@ -81,6 +81,11 @@ public:
     std::vector<std::vector<Edge>> adj;
 
     void attach_lone_points();
+
+    /**
+     * sorts edges by length in adj
+     */
+    void sort_edges();
 };
 
 #endif // GRAPH_HPP

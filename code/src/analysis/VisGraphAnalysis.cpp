@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     string spanner_path;
     string csv_path;
     double percent = -1.0;
-    int theta = 128;
+    int theta = 75;
 
 
     for (int i = 1; i < argc; i++) {
@@ -59,15 +59,18 @@ int main(int argc, char* argv[]) {
     /// LOAD THE GRAPHS
     ///////////////////////////////////////////////////////////////////////////////////
     auto base_graph = get<1>(load_fmi(base_graph_path, -1));
-    auto spanner_graph = create_theta_spanner_graph(&base_graph, theta); //get<1>(load_fmi(spanner_path,  -1));
+    //auto spanner_graph = create_theta_spanner_graph(&base_graph, theta); //get<1>(load_fmi(spanner_path,  -1));
+    auto spanner_graph = get<1>(load_fmi(spanner_path,  -1));
 
-    vector<Edge> edges_to_add = analyse_spanner_with_vis_graph(base_graph, spanner_graph, csv_path+"-"+to_string(theta)+".csv", "../../data/all_edges-"+to_string(theta)+".csv", percent);
+    /*vector<Edge> edges_to_add = analyse_spanner_with_vis_graph(base_graph, spanner_graph, csv_path+"-"+to_string(theta)+".csv", "../../data/all_edges-"+to_string(theta)+".csv", percent);
     for (Edge edge: edges_to_add) {
         spanner_graph.addEdge(edge.source, edge.target, edge.weight, true);
     }
     cout << "Added " << edges_to_add.size() << " edges to the spanner." << endl;
     string new_csv_path = csv_path.substr(0, csv_path.find_last_of('.')) + "_with_worst_edges.csv";
-    analyse_spanner_with_vis_graph(base_graph, spanner_graph, new_csv_path, "../../data/all_edges-"+to_string(theta)+"-"+to_string(percent)+".csv", 0.0);
+    */
+    //analyse_spanner_with_vis_graph(base_graph, spanner_graph, new_csv_path, "../../data/all_edges-"+to_string(theta)+"-"+to_string(percent)+".csv", 0.0);
+    analyse_spanner(base_graph, spanner_graph, "../../data/temp", base_graph_path);
 }
 
 

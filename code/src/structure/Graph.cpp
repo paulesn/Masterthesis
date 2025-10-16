@@ -63,22 +63,24 @@ Graph::Graph(const Graph *graph) {
  * @param w weight of the edge
  * @param undirected
  */
-bool Graph::addEdge(int u, int v, double w, bool undirected) {
-    undirected = true; // TODO remove
+bool Graph::addEdge(int u, int v, double w, bool safe) {
+    bool undirected = true; // TODO remove
     if (u > v) std::swap(u, v); // Ensure u is always less than v for consistent edge representation
     if (u < 0 || u >= n || v < 0 || v >= n) {
         cout << "Invalid node index: " << u << " or " << v << endl;
-        raise(SIGINT);
+        return false;
     }
     // Check if the edge already exists // TODO remove
-    if (existance.find({u, v}) != existance.end()) {
-        return false; // Edge already exists, do not add again
+    if (safe) {
+        if (existance.find({u, v}) != existance.end()) {
+            return false; // Edge already exists, do not add again
+        }
     }
 
     Edge e1 {u, v, w};
     auto &edges_u = adj[u];
     edges_u.emplace_back(e1); // this is not very efficant TODO
-    existance.emplace(u, v);// Mark the edge as existing
+    if (safe) existance.emplace(u, v);// Mark the edge as existing
 
     if (undirected) {
         Edge e2{v, u, w};
@@ -345,5 +347,14 @@ void Graph::attach_lone_points() {
             Edge edge = Edge(i, i-1, 1);
             this->adj[i].emplace_back(edge);
         }
+    }
+}
+
+void Graph::sort_edges() {
+    for (int i=0; i<this->adj.size();i++){
+        auto &list = this->adj[i];
+        std::sort(list.begin(), list.end(), [](const Edge& a, const Edge& b) {
+            return a.weight < b.weight;
+        });
     }
 }

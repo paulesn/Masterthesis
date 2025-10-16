@@ -11,9 +11,11 @@
  * This function creates a theta graph based on a input graph. The resulting graph only contains edges in the oroiginal graph
  * @param graph the original graph the theta spanner should be based on
  * @param theta the number of zones around each node for edges
+ * @param early_break if true, the algorithm stops adding edges for a node if all zones are filled only use if edges are sorted by length
  * @return a new graph
  */
-Graph create_theta_spanner_graph(Graph* graph, const int theta);
+Graph create_theta_spanner_graph(Graph* graph, const int theta, bool early_break = false);
+
 
 void dynamic_theta_update(Graph* graph, Graph* spanner, double t);
 
