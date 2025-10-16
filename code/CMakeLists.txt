@@ -3,6 +3,7 @@ project(Masterthesis)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra")
 
 # Find and link OpenMP
 find_package(CGAL)
