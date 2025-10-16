@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
     ///////////////////////////////////////////////////////////////////////////////////
     auto base_graph = get<1>(load_fmi(base_graph_path, -1));
     //auto spanner_graph = create_theta_spanner_graph(&base_graph, theta); //get<1>(load_fmi(spanner_path,  -1));
-    auto spanner_graph = create_theta_spanner_graph(base_graph, k);
+    auto spanner_graph = create_theta_spanner_graph(&base_graph, k);
 
     /*vector<Edge> edges_to_add = analyse_spanner_with_vis_graph(base_graph, spanner_graph, csv_path+"-"+to_string(theta)+".csv", "../../data/all_edges-"+to_string(theta)+".csv", percent);
     for (Edge edge: edges_to_add) {
