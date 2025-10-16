@@ -1,0 +1,16 @@
+
+.idea/
+
+.DS_Store
+
+data/
+
+code/cmake-build-debug/
+
+code/cmake-build-release/
+
+data-D.csv
+
+theta-graph/
+
+simplestGraphRendering

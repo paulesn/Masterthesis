@@ -245,6 +245,7 @@ GVGdJ
 Gujja
 GXG
 GAm
+Größen
 start
 shorter
 shortcuts
@@ -568,6 +569,7 @@ sYOP
 sebastian
 sized
 sortiert
+sehen
 and
 an
 all
@@ -935,6 +937,9 @@ applicable
 axis
 alle
 auf
+als
+avg
+anschauen
 target
 to
 the
@@ -1474,6 +1479,7 @@ werden
 wurden
 wurde
 wert
+whole
 draw
 defined
 distance
@@ -2371,6 +2377,7 @@ finished
 folgende
 freq
 folgenden
+follow
 We
 With
 While
@@ -2949,6 +2956,7 @@ cmake
 completed
 constructions
 correlation
+continuous
 longest
 list
 length
@@ -3589,6 +3597,7 @@ ich
 inf
 ihrem
 ihren
+intervall
 our
 on
 of
@@ -3837,6 +3846,7 @@ obtain
 obtained
 obstacle
 originialen
+oder
 path
 point
 points
@@ -4133,6 +4143,7 @@ phDN
 present
 polytopcs
 polytops
+passiert
 midpoint
 most
 more
@@ -4440,6 +4451,7 @@ mWY
 mBx
 mean
 müssen
+mehere
 replace
 range
 represented
@@ -4988,6 +5000,7 @@ nWI
 noch
 nach
 nachdem
+nimmt
 Repeat
 Remove
 Requirements
@@ -5431,6 +5444,7 @@ uTB
 uDnF
 uSS
 uLP
+und
 jump
 jumps
 jYQ
@@ -6393,6 +6407,8 @@ Plot
 Plots
 Pfaden
 Pearson
+Punkte
+Prozentuale
 know
 known
 kd
@@ -7368,6 +7384,7 @@ garden
 gibt
 gewisses
 gesamtgröße
+gleichen
 Lemma
 LY
 Linearized
@@ -8089,6 +8106,9 @@ verstanden
 vis
 viel
 verwendet
+visSpanner
+vergleicht
+vollen
 For
 Formal
 Factor
@@ -8622,6 +8642,7 @@ AWf
 ANg
 Azt
 Alles
+Anzahl
 In
 If
 Info
@@ -9895,6 +9916,7 @@ OPL
 OmHd
 OcMb
 OKU
+Orginalen
 Definition
 Does
 Dijkstra
@@ -11112,6 +11134,7 @@ Brc
 BYG
 BkOT
 Blaue
+Basis
 xref
 xC
 xJo
@@ -11572,6 +11595,9 @@ VErt
 Vhn
 VqX
 Value
+Vergleich
+Verhältnis
+Vis
 Jy
 JUf
 JY
