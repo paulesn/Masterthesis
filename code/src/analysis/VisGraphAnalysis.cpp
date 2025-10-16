@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
     ///////////////////////////////////////////////////////////////////////////////////
     /// LOAD THE GRAPHS
     ///////////////////////////////////////////////////////////////////////////////////
-    auto base_graph = get<1>(load_fmi(base_graph_path, -1));
+    auto base_graph = load_coastline(base_graph_path);
     //auto spanner_graph = create_theta_spanner_graph(&base_graph, theta); //get<1>(load_fmi(spanner_path,  -1));
     auto spanner_graph = create_theta_spanner_graph(&base_graph, k);
 
