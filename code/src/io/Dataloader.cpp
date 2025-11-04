@@ -195,3 +195,7 @@ Graph load_coastline(const std::string &filepath) {
     return g;
 }
 
+Graph load_gamemap(const std::string &filepath) {
+
+}
+

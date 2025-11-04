@@ -1,4 +1,7 @@
 //
+// Created by Sebastian Paule on 11/4/25.
+//
+//
 // Created by Sebastian Paule on 9/15/25.
 //
 /**
@@ -24,10 +27,10 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 
-    string base_graph_path;
+    string coastline_path;
     string spanner_path;
     string csv_path;
-    double percent = -1.0;
+    double cutoff = 1.1;
     int k = 75;
 
 
@@ -37,22 +40,19 @@ int main(int argc, char* argv[]) {
         if (arg == "-sg" && i + 1 < argc) {
             spanner_path = argv[++i];
             std::cout << "Spanner path: " << spanner_path << std::endl;
-        } else if (arg == "-vg" && i + 1 < argc) {
-            base_graph_path = argv[++i];
-            std::cout << "VisGraph graph path: " << base_graph_path << std::endl;
-        } else if (arg == "-csv" && i + 1 < argc) {
-            csv_path = argv[++i];
-            std::cout << "CSV output path: " << csv_path << std::endl;
-        }else if (arg == "-p" && i + 1 < argc) {
-            percent = stod(argv[++i]);
-            std::cout << "percent of worst edges to add to spanner: " << percent << std::endl;
+        } else if (arg == "-cg" && i + 1 < argc) {
+            coastline_path = argv[++i];
+            std::cout << "Coastline graph path: " << coastline_path << std::endl;
+        }else if (arg == "-c" && i + 1 < argc) {
+            cutoff = stod(argv[++i]);
+            std::cout << "percent of worst edges to add to spanner: " << cutoff << std::endl;
         }else if (arg == "-k" && i + 1 < argc) {
             k = stoi(argv[++i]);
             std::cout << "k cones for the spanner (ehem. theta): " << k << std::endl;
         }
     }
 
-    if (spanner_path.empty() || base_graph_path.empty() || percent < 0) {
+    if (spanner_path.empty() || coastline_path.empty() || cutoff < 0) {
         std::cerr << "Usage: " << argv[0] << " -sg <string> -vg <string> -csv <string> -p <double> -k <int>\n";
         for (int i = 0; i < argc; i++) std::cerr << " " << argv[i];
         return 1;
@@ -61,9 +61,10 @@ int main(int argc, char* argv[]) {
     ///////////////////////////////////////////////////////////////////////////////////
     /// LOAD THE GRAPHS
     ///////////////////////////////////////////////////////////////////////////////////
-    auto base_graph = get<1>(load_fmi(base_graph_path));
-    //auto spanner_graph = create_theta_spanner_graph(&base_graph, theta); //get<1>(load_fmi(spanner_path,  -1));
-    auto spanner_graph = create_theta_spanner_graph(&base_graph, k);
+    auto spanner_graph = get<1>(load_fmi(spanner_path,  -1));
+
+    analyse_spanner_with_coastline_graph(coastline_path, spanner_graph, cutoff);
+
 
     /*vector<Edge> edges_to_add = analyse_spanner_with_vis_graph(base_graph, spanner_graph, csv_path+"-"+to_string(theta)+".csv", "../../data/all_edges-"+to_string(theta)+".csv", percent);
     for (Edge edge: edges_to_add) {
@@ -73,9 +74,6 @@ int main(int argc, char* argv[]) {
     string new_csv_path = csv_path.substr(0, csv_path.find_last_of('.')) + "_with_worst_edges.csv";
     */
     //analyse_spanner_with_vis_graph(base_graph, spanner_graph, new_csv_path, "../../data/all_edges-"+to_string(theta)+"-"+to_string(percent)+".csv", 0.0);
-    analyse_spanner_with_vis_graph(base_graph, spanner_graph, csv_path, "../data/temp.csv", 0.0);
-    analyse_random_paths_with_vis_graph(base_graph, spanner_graph, csv_path, 10000, k);
-    analyse_long_random_paths_with_vis_graph(base_graph, spanner_graph, csv_path, 10000, k, 0.9);
 }
 
 

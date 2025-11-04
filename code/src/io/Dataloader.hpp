@@ -25,3 +25,5 @@ std::tuple<std::vector<Pointc>, Graph> load_fmi(const std::string& filepath, int
 
 Graph load_coastline(const std::string &filepath);
 #endif // DATALOADER_HPP
+
+Graph load_gamemap(const std::string &filepath);

@@ -7,6 +7,8 @@
 
 #include "MultiThetaAnalysis.h"
 #include "../daniel/theta-graph/headers/Progressbar.h"
+#include "../spanner/ThetaSpanner.hpp"
+#include "../io/DataWriter.h"
 
 
 using namespace std;
@@ -15,28 +17,25 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
 
-    string base_graph_path;
-    string spanner_path;
+    string coastline_path;
     string csv_path;
+    string temp_path = "../../data/temp.fmi";
 
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
 
-        if (arg == "-sg" && i + 1 < argc) {
-            spanner_path = argv[++i];
-            std::cout << "Spanner path: " << spanner_path << std::endl;
-        } else if (arg == "-bg" && i + 1 < argc) {
-            base_graph_path = argv[++i];
-            std::cout << "Base graph path: " << base_graph_path << std::endl;
+        if (arg == "-c" && i + 1 < argc) {
+            coastline_path = argv[++i];
+            std::cout << "coastline path: " << coastline_path << std::endl;
         } else if (arg == "-csv" && i + 1 < argc) {
             csv_path = argv[++i];
             std::cout << "CSV output path: " << csv_path << std::endl;
         }
     }
 
-    if (spanner_path.empty() || base_graph_path.empty()) {
-        std::cerr << "Usage: " << argv[0] << " -sg <string> -bg <string> -csv <string>\n";
+    if (coastline_path.empty()) {
+        std::cerr << "Usage: " << argv[0] << " -c <string> -csv <string>\n";
         for (int i = 0; i < argc; i++) std::cerr << " " << argv[i];
         return 1;
     }
@@ -44,11 +43,12 @@ int main(int argc, char* argv[]) {
     ///////////////////////////////////////////////////////////////////////////////////
     /// LOAD THE GRAPHS
     ///////////////////////////////////////////////////////////////////////////////////
-    auto base_graph = load_coastline(base_graph_path);
-    auto spanner_graph = get<1>(load_fmi(spanner_path,  -1));
+    auto base_graph = load_coastline(coastline_path);
+    auto spanner_graph = create_theta_spanner_graph(&base_graph,24, false);
+    cout << "Writing coastline file to temp file as graph" << endl;
+    //write_fmi(temp_path, base_graph);
 
-    analyse_spanner(base_graph, spanner_graph, csv_path, base_graph_path, 100, false);
-
+    analyse_spanner(base_graph, spanner_graph, csv_path, temp_path);
 }
 
 // TODO auch die worst case edge ausrechnen

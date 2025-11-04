@@ -14,8 +14,76 @@ find_package(Boost REQUIRED COMPONENTS serialization)
 # include_directories(include)
 include_directories(src/daniel/theta-graph/headers)
 
+add_executable(mtc
+        src/io/mapToCoastlines.cc
+)
+add_executable(cdt6
+        src/io/cdt6.cpp
+)
+
 add_executable(analyse
         src/analysis/ThetaSpannerAnalyser.cpp
+        src/analysis/MultiThetaAnalysis.cpp
+
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
+
+        src/spanner/ThetaSpanner.hpp
+        src/spanner/ThetaSpanner.cpp
+
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+
+
+
+        src/analysis/MultiThetaAnalysis.h
+
+
+)
+
+add_executable(cAllAnalysis
+        src/analysis/CoastlineAllEdgesanalysis.cpp
+        src/analysis/MultiThetaAnalysis.cpp
+
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
+
+        src/spanner/ThetaSpanner.hpp
+        src/spanner/ThetaSpanner.cpp
+
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+
+
+
+        src/analysis/MultiThetaAnalysis.h
+
+
+)
+
+
+add_executable(analyseCoastline
+        src/analysis/CoastlineAnalysis.cpp
         src/analysis/MultiThetaAnalysis.cpp
 
         src/daniel/theta-graph/headers/Progressbar.h
@@ -193,3 +261,15 @@ target_link_libraries(analysePaths ${Boost_LIBRARIES})
 target_link_libraries(thetaComp OpenMP::OpenMP_CXX)
 target_link_libraries(thetaComp CGAL::CGAL)
 target_link_libraries(thetaComp ${Boost_LIBRARIES})
+
+target_link_libraries(analyseCoastline OpenMP::OpenMP_CXX)
+target_link_libraries(analyseCoastline CGAL::CGAL)
+target_link_libraries(analyseCoastline ${Boost_LIBRARIES})
+
+target_link_libraries(cdt6 OpenMP::OpenMP_CXX)
+target_link_libraries(cdt6 CGAL::CGAL)
+target_link_libraries(cdt6 ${Boost_LIBRARIES})
+
+target_link_libraries(cAllAnalysis OpenMP::OpenMP_CXX)
+target_link_libraries(cAllAnalysis CGAL::CGAL)
+target_link_libraries(cAllAnalysis ${Boost_LIBRARIES})
