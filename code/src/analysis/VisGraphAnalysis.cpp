@@ -66,11 +66,14 @@ int main(int argc, char* argv[]) {
     std::cout << "Graph loaded. Sorting Edges" << std::endl;
     base_graph.sort_edges();
     std::cout << "Graph sorted. Analysing Spanner" << std::endl;
-    for (int k :{24,32,50,64,75,100,128}){
-        for (double p :{1.0, 0.9, 0.8, 0.7, 0.6, 0.5}){
+    for (int k :{24}){
+        for (double p : {3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}) {
             std::cout << "k:p->" << k << " : " << p << std::endl;
-            auto spanner_graph = create_theta_spanner_graph_with_max_angle(&base_graph, k, ((2*M_PI)/k)*p);
+            auto spanner_graph = create_theta_spanner_graph(&base_graph, k, false);
 
+            // the minimum angle possible is (2pi-(2pi/k))/2
+            double min_angle = ((2*M_PI)-(2*M_PI/k))/2*p;
+            enforce_small_angle_constraint(&base_graph, &spanner_graph,min_angle);
             /*vector<Edge> edges_to_add = analyse_spanner_with_vis_graph(base_graph, spanner_graph, csv_path+"-"+to_string(theta)+".csv", "../../data/all_edges-"+to_string(theta)+".csv", percent);
             for (Edge edge: edges_to_add) {
                 spanner_graph.addEdge(edge.source, edge.target, edge.weight, true);

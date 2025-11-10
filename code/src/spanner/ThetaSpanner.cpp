@@ -11,6 +11,7 @@
 # include <omp.h>
 #include <queue>
 #include <vector>
+#include <vector>
 #include <boost/fusion/container/vector/vector.hpp>
 
 #include "../daniel/theta-graph/headers/Triangulation.h"
@@ -287,6 +288,126 @@ Graph create_theta_spanner_graph_with_max_angle(Graph* graph, const int k, doubl
     return spanner;
 }
 
+void enforce_small_angle_constraint(std::string base_graph_path, Graph* spanner, double min_an) {
+    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+    std::vector<std::vector<Edge>> added_edges = std::vector<std::vector<Edge>>(num_threads);
+
+    Triangulation triangulation;
+    triangulation.readFromGraph(base_graph_path);
+
+
+    for (int node_id = 0; node_id < spanner->adj.size(); node_id++) {
+        std::vector<std::tuple<Edge*, double>> local_edges;
+        for (int i = 0; i < spanner->adj[node_id].size(); i++) {
+            auto edge = spanner->adj[node_id][i];
+            Pointc source = spanner->id_point_map[edge.source];
+            Pointc target = spanner->id_point_map[edge.target];
+            double angle = angle_between(source, target);
+            local_edges.push_back({&spanner->adj[node_id][i], angle});
+        }
+        // sort edges by angle
+        std::sort(local_edges.begin(), local_edges.end(), [](const std::tuple<Edge*, double>& a, const std::tuple<Edge*, double>& b) {
+            return std::get<1>(a) < std::get<1>(b);
+        });
+        // check angles between edges
+        for (int i = 0; i < local_edges.size(); i++) {
+            auto [edge_a, angle_a] = local_edges[i];
+            auto [edge_b, angle_b] = local_edges[(i + 1) % local_edges.size()]; // next edge, wraps around
+            double angle_diff = angle_b - angle_a;
+            if (angle_diff < min_an) {
+                InternalID ip1 = edge_a->target;
+                InternalID ip2 = edge_b->target;
+                if (triangulation.directVisibility(ip1, ip2)) {
+                    // need to add an edge between edge_a and edge_b
+                    Pointc p1 = spanner->id_point_map[edge_a->target];
+                    Pointc p2 = spanner->id_point_map[edge_b->target];
+                    Edge new_edge = {
+                        edge_a->target,
+                        edge_b->target,
+                        sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y))
+                    };
+                    int thread_id = omp_get_thread_num();
+                    added_edges[thread_id].push_back(new_edge);
+                }
+            }
+        }
+    }
+
+    int c = 0;
+    for (int i = 0; i < added_edges.size()-1; i++) {
+        auto e = added_edges[i];
+        for (auto edge: e) {
+            if (spanner->addEdge(edge.source, edge.target, edge.weight)) c++;
+        }
+    }
+    std::cout << "Enforcing angle constraint added " << c << " Edges to the spanner" << std::endl;
+}
+
+
+void enforce_small_angle_constraint(Graph* base_graph, Graph* spanner, double min_an) {
+    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+    std::vector<std::vector<Edge>> added_edges = std::vector<std::vector<Edge>>(num_threads);
+
+    for (int node_id = 0; node_id < spanner->adj.size(); node_id++) {
+        std::vector<std::tuple<Edge*, double>> local_edges;
+        for (int i = 0; i < spanner->adj[node_id].size(); i++) {
+            auto edge = spanner->adj[node_id][i];
+            Pointc source = spanner->id_point_map[edge.source];
+            Pointc target = spanner->id_point_map[edge.target];
+            double angle = angle_between(source, target);
+            local_edges.push_back({&spanner->adj[node_id][i], angle});
+        }
+        // sort edges by angle
+        std::sort(local_edges.begin(), local_edges.end(), [](const std::tuple<Edge*, double>& a, const std::tuple<Edge*, double>& b) {
+            return std::get<1>(a) < std::get<1>(b);
+        });
+        // check angles between edges
+        for (int i = 0; i < local_edges.size(); i++) {
+            auto [edge_a, angle_a] = local_edges[i];
+            auto [edge_b, angle_b] = local_edges[(i + 1) % local_edges.size()]; // next edge, wraps around
+            double angle_diff = angle_b - angle_a;
+            if (i == local_edges.size() - 1) {
+                angle_diff += 2*M_PI; // wrap around case
+            }
+            if (angle_diff < min_an) {
+                InternalID ip1 = edge_a->target;
+                InternalID ip2 = edge_b->target;
+                bool has_edge = false;
+                double correct_weight = 0.0; // Create a variable to store the weight
+
+                // Loop through the base_graph to find the edge AND its weight
+                for (int i=0; i < base_graph->adj[ip1].size(); i++) {
+                    if (base_graph->adj[ip1][i].target == ip2) {
+                        has_edge = true;
+                        correct_weight = base_graph->adj[ip1][i].weight; // <-- Get the correct weight
+                        break;
+                    }
+                }
+                if (has_edge) {
+                    // need to add an edge between edge_a and edge_b
+                    Pointc p1 = spanner->id_point_map[edge_a->target];
+                    Pointc p2 = spanner->id_point_map[edge_b->target];
+                    Edge new_edge = {
+                        edge_a->target,
+                        edge_b->target,
+                        correct_weight
+                    };
+                    int thread_id = omp_get_thread_num();
+                    added_edges[thread_id].push_back(new_edge);
+                }
+            }
+        }
+    }
+
+    int c = 0;
+    for (int i = 0; i < added_edges.size()-1; i++) {
+        auto e = added_edges[i];
+        for (auto edge: e) {
+            if (spanner->addEdge(edge.source, edge.target, edge.weight)) c++;
+        }
+    }
+    std::cout << "Enforcing angle constraint added " << c << " Edges to the spanner" << std::endl;
+}
 
 
 

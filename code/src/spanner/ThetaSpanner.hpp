@@ -39,4 +39,24 @@ double angle_between(Pointc a, Pointc b);
  */
 Graph create_theta_spanner_graph_with_max_angle(Graph* graph, const int k, double max_an);
 
+/**
+ * this function iterates through all adjacent angles on each node and for each angle between edge uv and uw it adds the edge vw if the angle is to small
+ * this version uses a triangulation to check for visibility
+ * @param base_graph_path the path to the coastlines file for the triangulation
+ * @param spanner
+ * @param min_an
+ * @return
+ */
+void enforce_small_angle_constraint(std::string base_graph_path, Graph* spanner, double min_an);
+
+/**
+ * this function iterates through all adjacent angles on each node and for each angle between edge uv and uw it adds the edge vw if the angle is to small
+ * this variant uses a vis graph to check for visibility
+ * @param base_graph the base graph containing all visibility edges
+ * @param spanner
+ * @param min_an
+ * @return
+ */
+void enforce_small_angle_constraint(Graph* base_graph, Graph* spanner, double min_an);
+
 #endif //THETASPANNER_H

@@ -95,7 +95,7 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path, 
                 continue; // to avoid double checks in undirected graph
             }
 
-            double original_dist = euk_dist(base_graph.id_point_map.at(source), base_graph.id_point_map.at(target));
+            double original_dist = euk_dist(spanner_graph.id_point_map.at(source), spanner_graph.id_point_map.at(target));
             auto spanner_theta_dist = numeric_limits<double>::infinity();
 
             auto path = res[i].first;
@@ -239,7 +239,8 @@ std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner
             auto spanner_theta_dist = numeric_limits<double>::infinity();
             double spanner_dist  = spanner_graph.dijkstra(source, target).second;
             if (normalize(spanner_dist) < normalize(original_dist)) {
-                std::cerr << "Spanner distance is less than original distance for edge " << source << " - " << target << std::endl;
+                std::cerr << "Spanner distance is less than original distance for edge " << source << " - " << target
+                    << ": " << spanner_dist << " vs " << original_dist << std::endl;
             }
 
             double t_value = spanner_dist/original_dist;
@@ -641,18 +642,20 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
     /// analyse t-value
     ///////////////////////////////////////////////////////////////////////////////////
     int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
-    //num_threads = 10;
+    // num_threads = 1;
 
 
     vector<double> t_values_sum = vector<double>(num_threads+1, 0);
     vector<double> t_values_max = vector<double>(num_threads+1, 0);
     vector<int> number_of_edges = vector<int>(num_threads+1, 0);
     vector<vector<Edge>> worst_edges = vector<vector<Edge>>(num_threads+1);
+    vector<vector<double>> triang_times = vector<vector<double>>(num_threads+1);
+    vector<vector<double>> dijkstr_times = vector<vector<double>>(num_threads+1);
     for (int i = 0; i < num_threads; i++) {
         worst_edges.push_back(vector<Edge>());
     }
 
-    int max = spanner_graph.adj.size();
+    int max = 10000; //spanner_graph.adj.size();
     cout << "Prepare Triangulation" << endl;
     Triangulation triangulation;
     triangulation.readFromGraph(base_graph_coastline_path);
@@ -662,13 +665,13 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
     std::cout << ">";
     std::cout.flush();
 
-#pragma omp parallel for num_threads(num_threads) shared(spanner_graph, base_graph_coastline_path, t_values_sum, t_values_max) schedule(dynamic)
+#pragma omp parallel for num_threads(num_threads) shared(spanner_graph, base_graph_coastline_path, t_values_sum, t_values_max, triangulation) schedule(dynamic)
     for (int source = 0; source < max; source++) {
         // get id of current threat
         auto thread_num = omp_get_thread_num();
         if (thread_num == 0) {
-            //if ((source/max)*100 > percent_count) {
-            if (source % 100 == 0) {
+            if ((source/max)*100 > percent_count) {
+            //if (source % 100 == 0) {
                 percent_count++;
                 //std::cout << "|";
                 // 1. Get the current time
@@ -679,13 +682,16 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
                 using namespace std::chrono;
                 auto my_now = system_clock::now();
                 auto ms  = duration_cast<milliseconds>(my_now.time_since_epoch()).count(); // milliseconds since epoch
-                std::cout << "Progress: " << percent_count << "of " << max << "\t(" << ms << ")"<< std::endl;
+                std::cout << "Progress: " << percent_count << "%: " << source <<"of " << max << "\t(" << ms << ")"<< std::endl;
                 //std::cout.flush();
             }
         }
 
-
+        auto time_tri_start = std::chrono::system_clock::now();
         std::vector<GlobalID> temp = triangulation.oneToAllVisibility(source, false);
+        auto time_tri_end = std::chrono::system_clock::now();
+        std::chrono::duration<double> elapsed_seconds = time_tri_end - time_tri_start;
+        triang_times[thread_num].push_back(elapsed_seconds.count());
         std::vector<int> targets;
         targets.reserve(temp.size());
         for (auto id : temp) targets.push_back(static_cast<int>(id));
@@ -700,7 +706,11 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
         }
 
         // single source multiple targets dijkstra
+        auto time_dijk_start = std::chrono::system_clock::now();
         auto res = spanner_graph.multiSourceMultiTargetDijkstra({source}, targets, true);
+        auto time_dijk_end = std::chrono::system_clock::now();
+        elapsed_seconds = time_dijk_end - time_dijk_start;
+        dijkstr_times[thread_num].push_back(elapsed_seconds.count());
 
         // iterate over each target
         for (int i = 0; i < targets.size(); i++) {
@@ -745,6 +755,10 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
             double t_values_max_all = 0.0;
             int full_number_of_edges = 0;
             int full_number_of_worst_edges = 0;
+
+            double full_total_time_triang = 0.0;
+            double full_total_time_dijkstra = 0.0;
+
             vector<Edge> all_worst_edges = vector<Edge>();
 
             for (int i=0; i<num_threads; i++) {
@@ -755,7 +769,16 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
                 for (auto edge: worst_edges[i]) {
                     all_worst_edges.push_back(edge);
                 }
+                for (auto t: triang_times[i]) {
+                    full_total_time_triang += t;
+                }
+                for (auto t: dijkstr_times[i]) {
+                    full_total_time_dijkstra += t;
+                }
             }
+
+            cout << "AVG time for triangulation queries: " << full_total_time_triang/max << " seconds." << endl;
+            cout << "AVG time for dijkstra queries: " << full_total_time_dijkstra/max << " seconds." << endl;
 
             cout << "----------------------------------------------------------------------------------" << endl;
             cout << endl << "Results after analysing all edges:" << endl;
