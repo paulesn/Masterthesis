@@ -68,7 +68,7 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path, 
     for (int source = 0; source < max; source++) {
         progressBar.update(1);
         if (base_graph.adj[source].size() == 0) {
-            std::cout << "Node " << source << " has no edges in the base graph. Skipping." << std::endl;
+            //std::cout << "Node " << source << " has no edges in the base graph. Skipping." << std::endl;
             continue;
         }
 
@@ -82,7 +82,7 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path, 
             continue;
         }
         if (spanner_graph.adj[source].size() == 0) {
-            std::cerr << "Node " << source << " has no edges in the spanner graph. Skipping." << std::endl;
+            //std::cerr << "Node " << source << " has no edges in the spanner graph. Skipping." << std::endl;
             continue;
         }
 
@@ -212,7 +212,7 @@ std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner
     for (int source = 0; source < max; source++) {
         progressBar.update(1);
         if (base_graph.adj[source].size() == 0) {
-            std::cout << "Node " << source << " has no edges in the base graph. Skipping." << std::endl;
+            //std::cout << "Node " << source << " has no edges in the base graph. Skipping." << std::endl;
             continue;
         }
 
@@ -223,7 +223,7 @@ std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner
             continue;
         }
         if (spanner_graph.adj[source].size() == 0) {
-            std::cerr << "Node " << source << " has no edges in the spanner graph. Skipping." << std::endl;
+            //std::cerr << "Node " << source << " has no edges in the spanner graph. Skipping." << std::endl;
             continue;
         }
         // iterate over each target
@@ -675,8 +675,11 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
                 auto now = std::chrono::system_clock::now();
 
                 // 2. Convert it to a C-style time_t
-                std::time_t time = std::chrono::system_clock::to_time_t(now);
-                std::cout << "Progress: " << percent_count << "of " << max << "\t(" << time << ")"<< std::endl;
+                // cpp
+                using namespace std::chrono;
+                auto my_now = system_clock::now();
+                auto ms  = duration_cast<milliseconds>(my_now.time_since_epoch()).count(); // milliseconds since epoch
+                std::cout << "Progress: " << percent_count << "of " << max << "\t(" << ms << ")"<< std::endl;
                 //std::cout.flush();
             }
         }

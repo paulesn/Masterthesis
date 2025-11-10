@@ -27,4 +27,16 @@ void dynamic_theta_update(Graph* graph, Graph* spanner, double t);
  */
 double angle_between(Pointc a, Pointc b);
 
+/**
+ * this variant of the theta spanner creation always adds the shortest edge in each cone.
+ * If the edge has a to large angle to any of the cone borders, the edge and cone border are another cone.
+
+ * @param graph
+ * @param k
+ * @param early_break
+ * @param max_an the maximum angle between the edge and the furthest cone border
+ * @return
+ */
+Graph create_theta_spanner_graph_with_max_angle(Graph* graph, const int k, double max_an);
+
 #endif //THETASPANNER_H

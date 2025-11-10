@@ -11,6 +11,8 @@
 # include <omp.h>
 #include <queue>
 #include <vector>
+#include <boost/fusion/container/vector/vector.hpp>
+
 #include "../daniel/theta-graph/headers/Triangulation.h"
 
 
@@ -159,6 +161,133 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
     std::cout << "Existing edges: " << edge_existing << ", Not existing edges: " << edge_not_existing << std::endl;
     std::cout << "Total edges in spanner graph: " << spanner->number_of_edges << std::endl;
 }
+
+std::vector<Edge> get_nearest_zone_between_angles(Graph* graph, int source_node, double start_angle, double end_angle, double max_an, bool early_stop) {
+
+    //std::cout << "Searching for edge between angles " << start_angle << " and " << end_angle << " for node " << source_node << std::endl;
+
+    if (start_angle< 0 || end_angle < 0 ) return {};
+
+    std::vector<Edge> result = {};
+
+    bool angle_found=false;
+    double dist = -1;
+    double best_angle = -1;
+    Edge best_edge = {};
+
+    for (Edge edge : graph->adj[source_node]) {
+        // calculate the angle between the edge and the x-axis
+        Pointc source = graph->id_point_map[source_node];
+        Pointc target = graph->id_point_map[edge.target];
+        double radians = angle_between(source, target);
+        if (radians > 2 * M_PI) {
+            radians -= 2 * M_PI;
+        }
+        // check if the angle is between the two angles
+        if (radians > start_angle && radians < end_angle) {
+            // check if this is the first edge found or if it is shorter than the current best edge
+            if (!angle_found || edge.weight < dist) {
+                dist = edge.weight;
+                best_edge = edge;
+                angle_found = true;
+                double best_angle = radians;
+                if (early_stop) break;
+            }
+        }
+    }
+    if (!angle_found) {
+        //std::cerr << "WARNING: No edge found between angles " << start_angle << " and " << end_angle << " for node " << source_node << std::endl;
+        return {};
+    } else {
+        //std::cout << "Found edge to node " << best_edge.target << " with angle " << best_angle << " and weight " << best_edge.weight << std::endl;
+    }
+
+    // check if the angle needs to be reduced recursivly
+    double angle_to_start = std::abs(best_angle - start_angle);
+    double angle_to_end = std::abs(best_angle - end_angle);
+    if (angle_to_start > max_an) {
+        auto a = get_nearest_zone_between_angles(graph, source_node, start_angle, best_angle, max_an, early_stop);
+        for (auto e : a) {
+            result.push_back(e);
+        }
+    }
+    if (angle_to_end > max_an) {
+        auto a = get_nearest_zone_between_angles(graph, source_node, best_angle, start_angle, max_an, early_stop);
+        for (auto e : a) {
+            result.push_back(e);
+        }
+    }
+    return result;
+}
+
+Graph create_theta_spanner_graph_with_max_angle(Graph* graph, const int k, double max_an) {
+    Graph spanner (graph->id_point_map);
+    int counter = 0;
+    int fallback_counter = 0;
+    std::cout << "Creating theta spanner graph with " << k << " zones per node." << std::endl << ">";
+    std::cout << "ATTENTION: early_break is active. This fails to create spanner if the adj list is not sorted by edge length!" << std::endl;
+
+    for (int node_id= 0; node_id < graph->adj.size(); node_id++) {
+        counter++;
+
+        // print progress
+        if (graph->adj.size() > 100 && counter % (graph->adj.size()/100) == 0) {
+            std::cout << "|";
+            std::cout.flush();
+        }
+
+        Pointc source = graph->id_point_map[node_id];
+        std::vector<std::tuple<double, double>> empty_zones = {}; // start_angle, end_angle
+        empty_zones.reserve(k);
+        for (int i = 0; i < k; i++) {
+            double zone_start_angle = i * (2*M_PI/k);
+            double zone_end_angle = (i + 1) * (2*M_PI/k);
+            empty_zones.push_back(std::make_tuple(zone_start_angle, zone_end_angle));
+        }
+        std::vector<Edge> spanner_edges = std::vector<Edge>();
+        spanner_edges.reserve(k);
+        int edge_count = 0;
+
+
+        for (Edge edge : graph->adj[node_id]) {
+            Pointc target = graph->id_point_map[edge.target];
+            // calculate angle between the edge and the x-axis
+            double radians = angle_between(source, target);
+            for (int i = 0; i < empty_zones.size(); i++) {
+                auto [start_angle, end_angle] = empty_zones[i];
+                if (radians >= start_angle && radians < end_angle) {
+                    empty_zones.erase(empty_zones.begin() + i);
+                    //std::cout << edge.source << " -> " << edge.target << std::endl;
+                    Edge temp = {edge.source+0, edge.target+0, edge.weight+0};
+                    spanner_edges.push_back(temp);
+                    // check if the zone requires an aditional edge due to the max angle constraint
+                    double angle_to_start = std::abs(radians - start_angle);
+                    double angle_to_end = std::abs(end_angle - radians);
+                    if (angle_to_start > max_an) {
+
+                    }
+                    if (angle_to_end > max_an) {
+                        empty_zones.push_back({radians, end_angle});
+                    }
+                    break;
+                }
+            }
+        }
+        for (int i = 0; i < spanner_edges.size(); i++) {
+                // add the edge to the spanner graph
+                //std::cout << spanner_edges[i].source << " -> " << spanner_edges[i].target << std::endl;
+                spanner.addEdge(node_id, spanner_edges[i].target, spanner_edges[i].weight);
+                edge_count++;
+        }
+    }
+    // finalize progress output
+    std::cout << std::endl;
+    std::cout << "Created theta spanner graph with " << fallback_counter << " fallbacks." << std::endl;
+
+    return spanner;
+}
+
+
 
 
 
