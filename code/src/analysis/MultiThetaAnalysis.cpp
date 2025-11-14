@@ -645,17 +645,18 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
     // num_threads = 1;
 
 
-    vector<double> t_values_sum = vector<double>(num_threads+1, 0);
-    vector<double> t_values_max = vector<double>(num_threads+1, 0);
-    vector<int> number_of_edges = vector<int>(num_threads+1, 0);
-    vector<vector<Edge>> worst_edges = vector<vector<Edge>>(num_threads+1);
-    vector<vector<double>> triang_times = vector<vector<double>>(num_threads+1);
-    vector<vector<double>> dijkstr_times = vector<vector<double>>(num_threads+1);
-    for (int i = 0; i < num_threads; i++) {
+    vector<double> t_values_sum = vector<double>(spanner_graph.adj.size(), 0.0);
+    vector<double> t_values_max = vector<double>(spanner_graph.adj.size(), 0.0);
+    vector<int> number_of_edges = vector<int>(spanner_graph.adj.size(), 0);
+    vector<double> triang_times = vector<double>(spanner_graph.adj.size(),0.0);
+    vector<double> dijkstr_times = vector<double>(spanner_graph.adj.size(),0.0);
+    vector<vector<Edge>> worst_edges = vector<vector<Edge>>();
+    for (int i = 0; i < spanner_graph.adj.size(); i++) {
         worst_edges.push_back(vector<Edge>());
     }
 
-    int max = 10000; //spanner_graph.adj.size();
+
+    int max = spanner_graph.adj.size();
     cout << "Prepare Triangulation" << endl;
     Triangulation triangulation;
     triangulation.readFromGraph(base_graph_coastline_path);
@@ -665,13 +666,13 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
     std::cout << ">";
     std::cout.flush();
 
-#pragma omp parallel for num_threads(num_threads) shared(spanner_graph, base_graph_coastline_path, t_values_sum, t_values_max, triangulation) schedule(dynamic)
+#pragma omp parallel for num_threads(num_threads)
     for (int source = 0; source < max; source++) {
         // get id of current threat
-        auto thread_num = omp_get_thread_num();
-        if (thread_num == 0) {
-            if ((source/max)*100 > percent_count) {
-            //if (source % 100 == 0) {
+        auto thread_numt = omp_get_thread_num();
+        if (thread_numt == 0) {
+            if ((int)(((double)source / max) * 100) > percent_count) {
+                //if (source % 100 == 0) {
                 percent_count++;
                 //std::cout << "|";
                 // 1. Get the current time
@@ -688,10 +689,15 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
         }
 
         auto time_tri_start = std::chrono::system_clock::now();
-        std::vector<GlobalID> temp = triangulation.oneToAllVisibility(source, false);
+        std::vector<GlobalID> temp = {};
+        //#pragma omp critical(traingulation)
+        {
+            temp = triangulation.oneToAllVisibility(source, false);
+        }
+
         auto time_tri_end = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = time_tri_end - time_tri_start;
-        triang_times[thread_num].push_back(elapsed_seconds.count());
+        triang_times[source] += elapsed_seconds.count();
         std::vector<int> targets;
         targets.reserve(temp.size());
         for (auto id : temp) targets.push_back(static_cast<int>(id));
@@ -705,18 +711,31 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
             continue;
         }
 
+
         // single source multiple targets dijkstra
         auto time_dijk_start = std::chrono::system_clock::now();
-        auto res = spanner_graph.multiSourceMultiTargetDijkstra({source}, targets, true);
+        vector<pair<vector<int>,double>> res;
+        //res = spanner_graph.multiSourceMultiTargetEdgeFrontierDijkstra({source}, targets, true);
+        res = spanner_graph.multiSourceMultiTargetDijkstra({source}, targets, true);
         auto time_dijk_end = std::chrono::system_clock::now();
         elapsed_seconds = time_dijk_end - time_dijk_start;
-        dijkstr_times[thread_num].push_back(elapsed_seconds.count());
+
+        dijkstr_times[source] += elapsed_seconds.count();
+
+        if (res.size() != targets.size()) {
+            std::cout << "ERROR: Dijkstra result size does not match target size for source " << source << std::endl;
+            continue;
+        }
 
         // iterate over each target
         for (int i = 0; i < targets.size(); i++) {
+            auto path = res[i].first;
+            if (path.size()==0) {
+                std::cout << "ERROR: Path length is 0 for" << source << " and target number (not ID)" << i << std::endl;
+                continue;
+            }
+            int target = path[path.size() - 1];
 
-
-            int target = targets[i];
             if (source > target) {
                 continue; // to avoid double checks in undirected graph
             }
@@ -724,25 +743,21 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
             double original_dist = euk_dist(spanner_graph.id_point_map.at(source), spanner_graph.id_point_map.at(target));
             auto spanner_theta_dist = numeric_limits<double>::infinity();
 
-            auto path = res[i].first;
+
             // santiy check for path
-            int path_target = path[path.size() - 1];
-            if (path_target != target) {
-                //std::cout << "ERROR: Path target does not match expected target for source " << source << " and target " << target << std::endl;
-                continue;
-            }
+
             double spanner_dist  = res[i].second;
 
             double t_value = spanner_dist/original_dist;
 
-            t_values_sum[thread_num] += t_value;
-            if (t_value > t_values_max[thread_num]) t_values_max[thread_num] = t_value;
+            t_values_sum[source] += t_value;
+            if (t_value > t_values_max[source]) t_values_max[source] = t_value;
 
             if (t_value > t_cutoff) {
-                //worst_edges[thread_num].push_back(Edge(source, target, original_dist));
-                //worst_edges[thread_num].back().t_value = t_value;
+                worst_edges[source].push_back(Edge(source, target, original_dist));
+                worst_edges[source].back().t_value = t_value;
             }
-            number_of_edges[thread_num]++;
+            number_of_edges[source]++;
 
         }
     }
@@ -761,7 +776,7 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
 
             vector<Edge> all_worst_edges = vector<Edge>();
 
-            for (int i=0; i<num_threads; i++) {
+            for (int i=0; i<max; i++) {
                 t_values_all_sum += t_values_sum[i];
                 if (t_values_max[i] > t_values_max_all) t_values_max_all = t_values_max[i];
                 full_number_of_worst_edges += worst_edges[i].size();
@@ -769,12 +784,9 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
                 for (auto edge: worst_edges[i]) {
                     all_worst_edges.push_back(edge);
                 }
-                for (auto t: triang_times[i]) {
-                    full_total_time_triang += t;
-                }
-                for (auto t: dijkstr_times[i]) {
-                    full_total_time_dijkstra += t;
-                }
+                full_total_time_triang += triang_times[i];
+                full_total_time_dijkstra += dijkstr_times[i];
+
             }
 
             cout << "AVG time for triangulation queries: " << full_total_time_triang/max << " seconds." << endl;
@@ -793,3 +805,36 @@ std::vector<Edge> analyse_spanner_with_coastline_graph(string base_graph_coastli
 
             return all_worst_edges;
         }
+
+void dijkstra_debugging(Graph graph) {
+    graph.sort_edges();
+    for (int source = 0; source < graph.adj.size(); source++) {
+        std::cout << "Debugging Dijkstra for source node " << source << std::endl;
+        //all nodes are targets
+        auto targets = vector<int>();
+        for (int i = 0; i < graph.adj.size(); i++) {
+            if (i != source) {
+                targets.push_back(i);
+            }
+        }
+        auto res1 = graph.multiSourceMultiTargetEdgeFrontierDijkstra({source}, targets, true);
+        auto res2 = graph.multiSourceMultiTargetDijkstra({source}, targets, true);
+        for (auto [path, dist]:res1) {
+            for (auto [path2, dist2]:res2) {
+                if (path[path.size()-1] == path2[path2.size()-1]) {
+                    auto [path3 ,dist3] = graph.dijkstra(source, path[path.size()-1]);
+                    if (normalize(dist) != normalize(dist3)) {
+                        std::cout << "ERROR: Dijkstra distance mismatch (edges vs std)for source " << source << " and target " << path[path.size()-1] << ": " << dist << " vs " << dist3 << std::endl;
+                    }
+                    if (normalize(dist2) != normalize(dist3)) {
+                        std::cout << "ERROR: Dijkstra distance mismatch (multi vs std)for source " << source << " and target " << path[path.size()-1] << ": " << dist << " vs " << dist3 << std::endl;
+                    }
+                    if (normalize(dist) != normalize(dist2)) {
+                        std::cout << "ERROR: Dijkstra distance mismatch (edges vs multi)for source " << source << " and target " << path[path.size()-1] << ": " << dist << " vs " << dist2 << std::endl;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}

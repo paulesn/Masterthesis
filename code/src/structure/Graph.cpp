@@ -159,14 +159,14 @@ vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
     bool all)
 {
     const double INF = numeric_limits<double>::infinity();
-    vector<double> dist(n, INF);
-    vector<int> prev(n, -1);
-    vector<bool> isTarget(n, false);
+    vector<double> dist(adj.size(), INF);
+    vector<int> prev(adj.size(), -1);
+    vector<bool> isTarget(adj.size(), false);
     std::unordered_set<int> remainingTargets;
 
     // Mark target nodes
     for (int t : targets) {
-        if (t >= 0 && t < n) {
+        if (t >= 0 && t < adj.size()) {
             isTarget[t] = true;
             remainingTargets.insert(t);
         }
@@ -177,7 +177,7 @@ vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
     priority_queue<NodeDist, vector<NodeDist>, greater<NodeDist>> pq;
 
     for (int src : sources) {
-        if (src >= 0 && src < n) {
+        if (src >= 0 && src < adj.size()) {
             dist[src] = 0.0;
             pq.emplace(0.0, src);
         }
@@ -213,6 +213,104 @@ vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
                 dist[v] = nd;
                 prev[v] = u;
                 pq.emplace(nd, v);
+            }
+        }
+    }
+
+    return results;
+}
+
+vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetEdgeFrontierDijkstra(
+    const vector<int>& sources,
+    const vector<int>& targets,
+    bool all)
+{
+    //std::cout << "Using multiSourceMultiTargetEdgeFrontierDijkstra This means the edges have to be sorted according to weight" << std::endl;
+    const double INF = numeric_limits<double>::infinity();
+    vector<double> dist(adj.size(), INF);
+    vector<int> prev(adj.size(), -1);
+    vector<int> edgeCounter(adj.size(), 0);
+    vector<bool> isTarget(adj.size(), false);
+    std::unordered_set<int> remainingTargets;
+
+    // Mark target nodes
+    for (int t : targets) {
+        if (t >= 0 && t < adj.size()) {
+            isTarget[t] = true;
+            remainingTargets.insert(t);
+        }
+    }
+
+    // Min-heap priority queue: (distance, source, target)
+    using NodeDist = tuple<double, int, int>;
+    priority_queue<NodeDist, vector<NodeDist>, greater<NodeDist>> pq;
+
+    for (int src : sources) {
+        if (src >= 0 && src < adj.size()) {
+            dist[src] = 0.0;
+            if (!adj[src].empty()){
+                pq.emplace(adj[src][0].weight, src, adj[src][0].target);
+                //std::cout << "Adding initial edge from source " << src << " to target " << adj[src][0].target << " with weight " << adj[src][0].weight << std::endl;
+                edgeCounter[src]++;
+            }
+        }
+    }
+
+    vector<pair<vector<int>, double>> results;
+
+    while (!pq.empty()) {
+        auto [d, v, u] = pq.top();
+        //std::cout << "Popping edge from " << v << " to " << u << " with distance " << d << std::endl;
+        pq.pop();
+
+
+        // 2. We've processed an edge from 'v', so queue its *next* edge.
+        //    (This block is correct and belongs here).
+        if (edgeCounter[v] < adj[v].size()) {
+            double nd = dist[v] + adj[v][edgeCounter[v]].weight;
+            if (edgeCounter[v] + 1 < adj[v].size() && adj[v][edgeCounter[v]].weight > adj[v][edgeCounter[v]+1].weight) {
+                //std::cerr << "Warning: Edges are not sorted by weight for node " << v << std::endl;
+                return {};
+            }
+            pq.emplace(nd, v, adj[v][edgeCounter[v]].target);
+            //std::cout << "Expanding edge from " << v << " to " << adj[v][edgeCounter[v]].target << " with weight " << adj[v][edgeCounter[v]].weight << std::endl;
+            edgeCounter[v]++;
+        }
+
+        // 1. Prune stale paths.
+        if (d > dist[u]) continue;
+
+        // 3. Check if this is a *new* shortest path to 'u'.
+        //    If d == dist[u], we've been here before. Do nothing.
+        if (d < dist[u]) {
+            // --- THIS IS THE NEW SHORTEST PATH ---
+
+            // 4. Update distance and predecessor *first*.
+            dist[u] = d;
+            prev[u] = v;
+
+            // 5. *Now* check if this newly-found node is a target.
+            if (isTarget[u]) {
+                vector<int> path;
+                for (int at = u; at != -1; at = prev[at]) {
+                    path.push_back(at);
+                }
+                reverse(path.begin(), path.end());
+                // Now dist[u] correctly holds the value 'd'.
+                results.emplace_back(path, dist[u]);
+                remainingTargets.erase(u);
+
+                if (!all) break;
+                if (remainingTargets.empty()) break;
+            }
+
+            // 6. Expand from 'u' *only* on its first finalization.
+            //    (Block 1 belongs *inside* here, with a safety check).
+            if (edgeCounter[u] == 0 && !adj[u].empty()) {
+                double nd = dist[u] + adj[u][0].weight; // 'd' is the new dist[u]
+                pq.emplace(nd, u, adj[u][0].target);
+                //std::cout << "Adding first edge from node " << u << " to target " << adj[u][0].target << " with weight " << adj[u][0].weight << std::endl;
+                edgeCounter[u]++;
             }
         }
     }

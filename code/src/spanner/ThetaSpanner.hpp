@@ -59,4 +59,16 @@ void enforce_small_angle_constraint(std::string base_graph_path, Graph* spanner,
  */
 void enforce_small_angle_constraint(Graph* base_graph, Graph* spanner, double min_an);
 
+/**
+ * this function iterates through all edges in the base graph based on their length, from the longest to the shortest
+ * and checks if the spanner graph contains a t-path for each edge. if t is larger than the cuttoff value, the edge is added to the
+ * list of bad edges. the function stops when the specified number of edges have been checked.
+ * @param base_graph_path
+ * @param spanner_graph
+ * @param cutoff
+ * @param number_of_edges
+ * @return
+ */
+std::vector<Edge> identify_bad_edges_sorted_by_length(std::string base_graph_path, Graph* spanner_graph, double cutoff, int number_of_edges);
+
 #endif //THETASPANNER_H

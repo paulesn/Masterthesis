@@ -50,6 +50,9 @@ void analyse_long_random_paths_with_vis_graph(Graph base_graph, Graph spanner_gr
  * @return all edges with a t-value higher than t_cutoff
  */
 std::vector<Edge> analyse_spanner_with_coastline_graph(std::string base_graph_coastline_path, Graph spanner_graph, double t_cutoff);
+
+
+void dijkstra_debugging(Graph graph);
 #endif //MULTITHETAANALYSIS_H
 
 

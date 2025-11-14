@@ -19,9 +19,94 @@
 #include "MultiThetaAnalysis.h"
 #include "../daniel/theta-graph/headers/Progressbar.h"
 #include "../spanner/ThetaSpanner.hpp"
+#include "../daniel/theta-graph/headers/Triangulation.h"
+#include "../io/DataWriter.h"
 
 
 using namespace std;
+
+vector<int> bucket_edge_counter(std::string base_graph_path, Graph* spanner_graph, int number_of_buckets) {
+    Triangulation triangulation;
+    triangulation.readFromGraph(base_graph_path);
+
+    double max = 0.0;
+    int max_dist_node = -1;
+    // randomly choose 3 nodes
+    int node1 = rand() % spanner_graph->adj.size();
+    // identify maximum distance between them and all nodes
+    auto res1 = spanner_graph->multiSourceMultiTargetDijkstra({node1}, vector<int>(spanner_graph->adj.size()), true);
+    // use that as max distance
+    for (auto pair : res1) {
+        if (pair.second != numeric_limits<double>::infinity() && pair.second > max) {
+            max = pair.second;
+            max_dist_node = pair.first[pair.first.size() - 1];
+        }
+    }
+    auto res2 = spanner_graph->multiSourceMultiTargetDijkstra({max_dist_node}, vector<int>(spanner_graph->adj.size()), true);
+    for (auto pair : res2) {
+        if (pair.second != numeric_limits<double>::infinity() && pair.second > max) {
+            max = pair.second;
+        }
+    }
+
+    std::cout << "Triangulation loaded" << std::endl;
+
+    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+    // num_threads = 1;
+    std::vector<std::vector<int>> buckets_per_thread = std::vector<std::vector<int>>();
+    for (int i = 0; i < num_threads; i++) {
+        buckets_per_thread.push_back(vector<int>(number_of_buckets, 0));
+    }
+
+    std::cout << "Attention! total elements in the next lines are presented per thread! The true total is this number times the number of threads" << std::endl;
+    #pragma omp parallel for num_threads(num_threads)
+    for (int u = 0; u < spanner_graph->adj.size(); u++) {
+        // progress
+        auto thread_numt = omp_get_thread_num();
+        if (thread_numt == 0) {
+            if (u%1000==0) {
+                std::cout << "Thread #" << thread_numt << ": " <<u << " of " << (spanner_graph->adj.size()/num_threads) << std::endl;
+            }
+        }
+
+        auto targets = triangulation.oneToAllVisibility(u, false);
+        for (auto v_id : targets) {
+            int v = static_cast<int>(v_id);
+            if (u == v) continue;
+            auto a = spanner_graph->id_point_map[u];
+            auto b = spanner_graph->id_point_map[v];
+            auto dx = abs(a.x - b.x);
+            auto dy = abs(a.y - b.y);
+            double dist = sqrt(dx*dx + dy*dy);
+
+            // Calculate bucket
+            int bucket_id = (int)((dist / max) * number_of_buckets);
+
+            // Clamp the bucket_id to be in the valid range [0, number_of_buckets - 1]
+            if (bucket_id >= number_of_buckets) {
+                bucket_id = number_of_buckets - 1;
+            } else if (bucket_id < 0) {
+                // This shouldn't happen if dist is always positive, but good to have
+                bucket_id = 0;
+            }
+
+            // Now, increment the correct counter using the thread number
+            buckets_per_thread[thread_numt][bucket_id] += 1;
+        }
+    }
+    std::vector<int> buckets;
+
+
+    for (int i = 0; i < number_of_buckets; i++) {
+        int sum = 0;
+        for (int t = 0; t < num_threads; t++) {
+            sum += buckets_per_thread[t][i];
+        }
+        buckets.push_back(sum);
+        std::cout << "Bucket " << i << ": " << sum << " edges." << std::endl;
+    }
+    return buckets;
+}
 
 
 
@@ -62,17 +147,30 @@ int main(int argc, char* argv[]) {
     /// LOAD THE GRAPHS
     ///////////////////////////////////////////////////////////////////////////////////
     auto spanner_graph = get<1>(load_fmi(spanner_path,  -1));
+    auto coastline_graph = load_coastline(coastline_path);
 
-    analyse_spanner_with_coastline_graph(coastline_path, spanner_graph, cutoff);
+    //sanity check that this is the spanner for this coastline
+    if (spanner_graph.adj.size() != coastline_graph.adj.size()) {
+        std::cerr << "Error: Spanner graph and coastline graph have different number of nodes!" << std::endl;
+        return 1;
+    }
+
+    //bucket_edge_counter(coastline_path, &spanner_graph, 1000);
+
+    //auto add_edges = identify_bad_edges_sorted_by_length(coastline_path, &spanner_graph, cutoff, 100);
+
+    spanner_graph.sort_edges();
+    cout << "";
+    //dijkstra_debugging(spanner_graph);
+    auto edges = analyse_spanner_with_coastline_graph(coastline_path, spanner_graph, cutoff);
 
 
-    /*vector<Edge> edges_to_add = analyse_spanner_with_vis_graph(base_graph, spanner_graph, csv_path+"-"+to_string(theta)+".csv", "../../data/all_edges-"+to_string(theta)+".csv", percent);
-    for (Edge edge: edges_to_add) {
+    for (Edge edge: edges) {
         spanner_graph.addEdge(edge.source, edge.target, edge.weight, true);
     }
-    cout << "Added " << edges_to_add.size() << " edges to the spanner." << endl;
+    cout << "Added " << edges.size() << " edges to the spanner." << endl;
+    write_fmi("../../data/spanner_with_worst_edges-"+to_string(k)+"-"+to_string(cutoff)+".fmi", spanner_graph);
     string new_csv_path = csv_path.substr(0, csv_path.find_last_of('.')) + "_with_worst_edges.csv";
-    */
     //analyse_spanner_with_vis_graph(base_graph, spanner_graph, new_csv_path, "../../data/all_edges-"+to_string(theta)+"-"+to_string(percent)+".csv", 0.0);
 }
 

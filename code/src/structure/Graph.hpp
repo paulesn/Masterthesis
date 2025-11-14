@@ -77,6 +77,19 @@ public:
      */
     std::tuple<std::vector<int>,double> wspdCheck(std::vector<Pointc> &set1, std::vector<Pointc> &set2, double &set1_prec_dist, double &set2_prec_dist, double s=2);
 
+    /**
+     * this is a variant of multiSourceMultiTargetDijkstra that adds edges to the frontier instead of nodes
+     * each time an edge is evaluated, the first edge of the target node is added as well as the next node in the source node
+     * @param sources
+     * @param targets
+     * @param all
+     * @return
+     */
+    std::vector<std::pair<std::vector<int>, double>> multiSourceMultiTargetEdgeFrontierDijkstra(
+    const std::vector<int>& sources,
+    const std::vector<int>& targets,
+    bool all);
+
     int n;
     std::vector<std::vector<Edge>> adj;
 

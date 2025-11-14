@@ -348,6 +348,7 @@ void enforce_small_angle_constraint(Graph* base_graph, Graph* spanner, double mi
     int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
     std::vector<std::vector<Edge>> added_edges = std::vector<std::vector<Edge>>(num_threads);
 
+#pragma omp parallel for num_threads(num_threads)
     for (int node_id = 0; node_id < spanner->adj.size(); node_id++) {
         std::vector<std::tuple<Edge*, double>> local_edges;
         for (int i = 0; i < spanner->adj[node_id].size(); i++) {
@@ -411,4 +412,72 @@ void enforce_small_angle_constraint(Graph* base_graph, Graph* spanner, double mi
 
 
 
+std::vector<Edge> identify_bad_edges_sorted_by_length(std::string base_graph_path, Graph* spanner_graph, double cutoff, int number_of_edges) {
+    Triangulation triangulation;
+    triangulation.readFromGraph(base_graph_path);
+
+    std::cout << "Triangulation loaded" << std::endl;
+
+    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+    // num_threads = 1;
+    std::vector<std::priority_queue<Edge, std::vector<Edge>, EdgeWeightCompare>> worst_edges_queue = std::vector<std::priority_queue<Edge, std::vector<Edge>, EdgeWeightCompare>>(num_threads);
+
+    int percent_count = 0;
+
+    std::cout << "Attention! total elements in the next lines are presented per thread! The true total is this number times the number of threads" << std::endl;
+
+    #pragma omp parallel for num_threads(num_threads)
+    for (int u = 0; u < spanner_graph->adj.size(); u++) {
+
+        // progress
+        auto thread_numt = omp_get_thread_num();
+        if (thread_numt == 0) {
+            if (u%1000==0) {
+                std::cout << "Thread #" << thread_numt << ": " <<u << " of " << (spanner_graph->adj.size()/num_threads) << std::endl;
+                std::cout << worst_edges_queue[thread_numt].size() << std::endl;
+            }
+        }
+
+        auto targets = triangulation.oneToAllVisibility(u, false);
+        for (auto v_id : targets) {
+            int v = static_cast<int>(v_id);
+            if (u == v) continue;
+            auto a = spanner_graph->id_point_map[u];
+            auto b = spanner_graph->id_point_map[v];
+            auto dx = abs(a.x - b.x);
+            auto dy = abs(a.y - b.y);
+            double dist = sqrt(dx*dx + dy*dy);
+
+            worst_edges_queue[thread_numt].push({u, v, dist});
+            if (worst_edges_queue[thread_numt].size() > number_of_edges) {
+                worst_edges_queue[thread_numt].pop();
+            }
+        }
+    }
+    std::vector<Edge> worst_edges;
+    std::priority_queue<Edge, std::vector<Edge>, EdgeWeightCompare> final_worst_edges_queue = {};
+
+    int c = 0;
+    for (auto local_queue : worst_edges_queue) {
+        std::cout << c << std::endl;
+        while (!local_queue.empty()) {
+            final_worst_edges_queue.push(local_queue.top());
+            local_queue.pop();
+            if (final_worst_edges_queue.size() > number_of_edges) {
+                final_worst_edges_queue.pop();
+            }
+        }
+    }
+
+    while (!final_worst_edges_queue.empty()) {
+        auto e = final_worst_edges_queue.top();
+        auto res = spanner_graph->dijkstra(e.source, e.target);
+        if (res.second / e.weight > cutoff) {
+            worst_edges.push_back(e);
+        }
+        final_worst_edges_queue.pop();
+    }
+    std::cout << "Number of worst edges:" <<worst_edges.size() << std::endl;
+    return worst_edges;
+}
 
