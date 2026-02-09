@@ -24,6 +24,5 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
 std::tuple<std::vector<Pointc>, Graph> load_fmi(const std::string& filepath, int limit = -1, bool with_edges = true);
 
 Graph load_coastline(const std::string &filepath);
-#endif // DATALOADER_HPP
 
-Graph load_gamemap(const std::string &filepath);
+#endif // DATALOADER_HPP

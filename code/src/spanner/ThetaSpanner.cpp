@@ -163,6 +163,7 @@ void dynamic_theta_update(Graph *graph, Graph* spanner, const double t) {
     std::cout << "Total edges in spanner graph: " << spanner->number_of_edges << std::endl;
 }
 
+
 std::vector<Edge> get_nearest_zone_between_angles(Graph* graph, int source_node, double start_angle, double end_angle, double max_an, bool early_stop) {
 
     //std::cout << "Searching for edge between angles " << start_angle << " and " << end_angle << " for node " << source_node << std::endl;
@@ -479,5 +480,49 @@ std::vector<Edge> identify_bad_edges_sorted_by_length(std::string base_graph_pat
     }
     std::cout << "Number of worst edges:" <<worst_edges.size() << std::endl;
     return worst_edges;
+}
+
+void update_spanner_with_too_long_edges(Graph* base_graph, Graph* spanner_graph, double cutoff, int mode) {
+
+    std::vector<Edge> edges_to_add = {};
+
+    spanner_graph->sort_edges();
+    int counter = 0;
+
+    int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
+    if (mode != 0) num_threads = 1;
+
+    #pragma omp parallel for num_threads(num_threads) shared(counter, base_graph, spanner_graph, cutoff, mode) schedule(dynamic)
+    for (int i = 0; i < spanner_graph->adj.size(); i++) {
+        counter++;
+        if (spanner_graph->adj.size() > 100 && counter % (spanner_graph->adj.size()/100) == 0) {
+            std::cout << "|";
+            std::cout.flush();
+        }
+
+        auto edges = base_graph->adj[i];
+        // sort edges by weight
+        if (mode == 1) {
+            std::sort(edges.begin(), edges.end(), [](const Edge& a, const Edge& b) {
+                return a.weight < b.weight;
+            });
+        } else if (mode == 2) {
+            std::sort(edges.begin(), edges.end(), [](const Edge& a, const Edge& b) {
+                return a.weight > b.weight;
+            });
+        }
+        for (auto edge : edges) {
+            auto res = spanner_graph->dijkstra(edge.source, edge.target);
+            if (res.second / edge.weight > cutoff) {
+                if (mode > 0){spanner_graph->addEdge(edge.source, edge.target, edge.weight);}
+                else {edges_to_add.push_back(edge);}
+            }
+        }
+    }
+    if (mode == 0) {
+        for (auto edge : edges_to_add) {
+            spanner_graph->addEdge(edge.source, edge.target, edge.weight);
+        }
+    }
 }
 

@@ -47,8 +47,54 @@ add_executable(analyse
 
 
         src/analysis/MultiThetaAnalysis.h
+)
+
+add_executable(lowerbound
+        src/analysis/LowerBoundVergleich.cpp
+        src/analysis/MultiThetaAnalysis.cpp
+
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
+
+        src/spanner/ThetaSpanner.hpp
+        src/spanner/ThetaSpanner.cpp
+
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
 
 
+
+        src/analysis/MultiThetaAnalysis.h
+)
+
+add_executable(createVis
+        src/spanner/createVisGraph.cpp
+
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
 )
 
 add_executable(cAllAnalysis
@@ -71,6 +117,33 @@ add_executable(cAllAnalysis
         src/spanner/ThetaSpanner.hpp
         src/spanner/ThetaSpanner.cpp
 
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+
+
+
+        src/analysis/MultiThetaAnalysis.h
+
+
+)
+
+add_executable(vsDanielAnalysis
+        src/analysis/analysis_with_distance_file.cpp
+        src/analysis/MultiThetaAnalysis.cpp
+
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
+        src/spanner/ThetaSpanner.hpp
+        src/spanner/ThetaSpanner.cpp
         src/structure/Graph.cpp
         src/structure/Graph.hpp
 
@@ -237,6 +310,40 @@ add_executable(mixWspdThetaSpanner
         src/spanner/MixWspdThetaSpannerGenerator.cpp
 )
 
+add_executable(compareModify
+        src/io/DataWriter.cpp
+        src/io/DataWriter.h
+        src/io/Dataloader.cpp
+        src/io/Dataloader.hpp
+
+        src/spanner/ThetaSpanner.hpp
+        src/spanner/ThetaSpanner.cpp
+
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+        src/structure/Quadtree.cpp
+        src/structure/Quadtree.hpp
+
+        src/analysis/compareAlgoModifiedThetaGraph.cpp
+
+        src/daniel/theta-graph/headers/Progressbar.h
+        src/daniel/theta-graph/headers/Timer.h
+        src/daniel/theta-graph/sources/Triangulation.cpp
+        src/daniel/theta-graph/headers/Triangulation.h
+        src/daniel/theta-graph/headers/Geometry.h
+        src/daniel/theta-graph/sources/Geometry.cpp
+        src/daniel/theta-graph/headers/Structs.h
+
+        src/analysis/MultiThetaAnalysis.cpp
+)
+
+add_executable(Lowerbound
+        src/daniel/Lowerbound_Graph.cpp
+        src/daniel/Lowerbound_Graph.h
+        src/structure/Graph.cpp
+        src/structure/Graph.hpp
+)
+
 # Link OpenMP to your executable
 target_link_libraries(analyse OpenMP::OpenMP_CXX)
 target_link_libraries(analyse CGAL::CGAL)
@@ -270,6 +377,18 @@ target_link_libraries(cdt6 OpenMP::OpenMP_CXX)
 target_link_libraries(cdt6 CGAL::CGAL)
 target_link_libraries(cdt6 ${Boost_LIBRARIES})
 
+target_link_libraries(lowerbound OpenMP::OpenMP_CXX)
+target_link_libraries(lowerbound CGAL::CGAL)
+target_link_libraries(lowerbound ${Boost_LIBRARIES})
+
 target_link_libraries(cAllAnalysis OpenMP::OpenMP_CXX)
 target_link_libraries(cAllAnalysis CGAL::CGAL)
 target_link_libraries(cAllAnalysis ${Boost_LIBRARIES})
+
+target_link_libraries(createVis OpenMP::OpenMP_CXX)
+target_link_libraries(createVis CGAL::CGAL)
+target_link_libraries(createVis ${Boost_LIBRARIES})
+
+target_link_libraries(vsDanielAnalysis OpenMP::OpenMP_CXX)
+target_link_libraries(vsDanielAnalysis CGAL::CGAL)
+target_link_libraries(vsDanielAnalysis ${Boost_LIBRARIES})

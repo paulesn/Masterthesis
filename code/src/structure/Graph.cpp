@@ -9,16 +9,13 @@
 #include <iostream>
 #include <unordered_set>
 
-#include "HubLabels.hpp"
-#include "Quadtree.hpp"
-
 using namespace std;
 
 
 
 Pointc::Pointc(const double x_, const double y_): x(x_), y(y_), id(-1) {}
 
-Pointc::Pointc(const double x_, const double y_, const int id_): x(x_), y(y_), id(id_) {}
+Pointc::Pointc(const double x_, const double y_, const int id_, const int meta_): x(x_), y(y_), id(id_), meta(meta_){}
 
 std::ostream& operator<<(std::ostream& os, const Pointc& p) {
     os << "(" << p.x << ", " << p.y << ")";
@@ -220,6 +217,43 @@ vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetDijkstra(
     return results;
 }
 
+double Graph::getDistance(int source, int target) {
+    if (source == target) return 0.0;
+    if (source < 0 || target < 0 || source >= adj.size() || target >= adj.size()) return -1.0;
+
+    const double INF = std::numeric_limits<double>::infinity();
+
+    // Efficiency tip: If calling this millions of times,
+    // move 'dist' to a class member and use a 'timestamp' to reset it.
+    std::vector<double> dist(adj.size(), INF);
+
+    using NodeDist = std::pair<double, int>;
+    std::priority_queue<NodeDist, std::vector<NodeDist>, std::greater<NodeDist>> pq;
+
+    dist[source] = 0.0;
+    pq.emplace(0.0, source);
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+
+        // Important: Stop as soon as we settle the target node
+        if (u == target) return d;
+
+        if (d > dist[u]) continue;
+
+        for (const auto& e : adj[u]) {
+            double nd = d + e.weight;
+            if (nd < dist[e.target]) {
+                dist[e.target] = nd;
+                pq.emplace(nd, e.target);
+            }
+        }
+    }
+
+    return INF; // Truly unreachable
+    }
+
 vector<pair<vector<int>, double>> Graph::multiSourceMultiTargetEdgeFrontierDijkstra(
     const vector<int>& sources,
     const vector<int>& targets,
@@ -364,79 +398,6 @@ double ::Graph::longestShortestPath(const vector<Pointc>& set, int source) {
 }
 
 /**
- *
- * @return if two sets of nodes are well-separated by using the shortest path distance.
- */
-std::tuple<std::vector<int>,double> Graph::wspdCheck(std::vector<Pointc> &set1, std::vector<Pointc> &set2, double& set1_prec_dist, double& set2_prec_dist, double s) {
-
-    if (set1.empty() || set2.empty()) {
-        //cout << "One of the sets is empty, cannot calculate WSPD." << endl;
-        return {}; // Return empty path if one of the sets is empty
-    }
-
-    // check if all indicies are in the graph if not, return 0.0
-    for (const auto p : set1) {
-        if (p.id < 0 || p.id >= n) {
-            cout << "Invalid node index in set1: " << p.id << endl;
-            raise (SIGINT); // Raise SIGINT to terminate the program
-        }
-    }
-    for (const auto p : set2) {
-        if (p.id < 0 || p.id >= n) {
-            cout << "Invalid node index in set1: " << p.id << endl;
-            raise (SIGINT); // Raise SIGINT to terminate the program
-        }
-    }
-
-    // calculate the shortest longest path for both sets
-    double rad1 = (set1_prec_dist==-1) ? longestShortestPath(set1) : set1_prec_dist;
-    set1_prec_dist = rad1;
-    double rad2 = (set2_prec_dist==-1) ? longestShortestPath(set2) : set2_prec_dist;
-    set2_prec_dist = rad2;
-
-    // calculate the distance between the two sets using multi-source multi-target Dijkstra
-    vector<int> sources;
-    vector<int> targets;
-    for (const auto &p : set1) {
-        if (p.id >= 0 && p.id < n) {
-            sources.push_back(p.id);
-        } else {
-            cout << "Invalid node index in set1: " << p.id << endl;
-            raise(SIGINT); // Raise SIGINT to terminate the program
-        }
-    }
-    for (const auto &p : set2) {
-        if (p.id >= 0 && p.id < n) {
-            targets.push_back(p.id);
-        } else {
-            cout << "Invalid node index in set2: " << p.id << endl;
-            raise(SIGINT); // Raise SIGINT to terminate the program
-        }
-    }
-    auto distances = multiSourceMultiTargetDijkstra(
-        sources, targets, true
-    );
-    if (distances.empty()) {
-        cout << "No path found between the two sets." << endl;
-        return std::make_tuple(std::vector<int>{}, std::numeric_limits<double>::infinity()); // No path found
-    }
-    double dist = distances[0].second; // Get the distance from the first source to the first target
-    vector<int> ret_path = distances[0].first;
-    for (auto &result : distances) {
-        auto &path = result.first;
-        double d = result.second;
-        if (d < dist) {
-            dist = d; // Find the minimum distance
-            ret_path = result.first; // Update the path
-        }
-    }
-
-    if (dist >= s * max(rad1, rad2)) {
-        return {ret_path, dist}; // TODO maybe this is uneccesary repacking
-    }
-    return std::make_tuple(std::vector<int>{}, std::numeric_limits<double>::infinity()); // No path found
-}
-
 void Graph::attach_lone_points() {
     for (int i=0; i<this->adj.size();i++){
         auto list = this->adj[i];
@@ -447,7 +408,7 @@ void Graph::attach_lone_points() {
         }
     }
 }
-
+*/
 void Graph::sort_edges() {
     for (int i=0; i<this->adj.size();i++){
         auto &list = this->adj[i];

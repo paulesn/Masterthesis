@@ -71,4 +71,14 @@ void enforce_small_angle_constraint(Graph* base_graph, Graph* spanner, double mi
  */
 std::vector<Edge> identify_bad_edges_sorted_by_length(std::string base_graph_path, Graph* spanner_graph, double cutoff, int number_of_edges);
 
+/**
+ * same as identify_bad_edges_sorted_by_length but slower version that checks each edge individually and has no parallelization
+ * so that edges added earlier can be used as shortcuts for later edges
+ * @param graph the reference vis graph
+ * @param spanner the spanner to be modified
+ * @param cutoff the cutoff t value for adding edges
+ * @param mode if 0, use parallelisation and add edges in the end, if 1 add edges immediately without parallelisation from short to long, 2 add imidieatly from long to short
+ */
+void update_spanner_with_too_long_edges(Graph* base_graph, Graph* spanner_graph, double cutoff, int mode);
+
 #endif //THETASPANNER_H

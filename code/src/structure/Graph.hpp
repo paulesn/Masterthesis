@@ -17,9 +17,10 @@ struct pair_hash {
 struct Pointc {
     double x, y;
     int id; // Unique identifier for the point, -1 if not set
+    int meta; // additional metadata if needed
 
     Pointc(double x_, double y_);
-    Pointc(double x_, double y_, int id_);
+    Pointc(double x_, double y_, int id_, int meta_ = -1);
 
     bool operator==(const Pointc& other) const;
     bool operator<(const Pointc& other) const;
@@ -50,7 +51,7 @@ public:
     std::vector<Pointc> id_point_map;
     std::unordered_set<std::pair<int, int>, pair_hash> existance; // to check if an edge exists
 
-    int number_of_edges = 0;
+    size_t number_of_edges = 0;
 
     bool addEdge(int u, int v, double w, bool safe = true);
     bool hasEdge(int u, int v) {
@@ -63,42 +64,18 @@ public:
         const std::vector<int>& targets,
         bool all = false
     );
+    std::vector<std::pair<std::vector<int>, double>> multiSourceMultiTargetEdgeFrontierDijkstra(
+        const std::vector<int>& sources,
+        const std::vector<int>& targets,
+        bool all = false
+    );
 
     double longestShortestPath(const std::vector<Pointc>& set, int source = -1);
-
-    /**
-     *
-     * @param set1 a set of points in the graph
-     * @param set1_prec_dist the inner radius of the set in shortest paht distance -1 if not known
-     * @param set2 another set of points in the graph
-     * @param set2_prec_dist the inner radius of the set in shortest path distance -1 if not known
-     * @param s the seperation constant, the two sets are well-separated if the distance between them is at least s times the maximum of the inner radii
-     * @return
-     */
-    std::tuple<std::vector<int>,double> wspdCheck(std::vector<Pointc> &set1, std::vector<Pointc> &set2, double &set1_prec_dist, double &set2_prec_dist, double s=2);
-
-    /**
-     * this is a variant of multiSourceMultiTargetDijkstra that adds edges to the frontier instead of nodes
-     * each time an edge is evaluated, the first edge of the target node is added as well as the next node in the source node
-     * @param sources
-     * @param targets
-     * @param all
-     * @return
-     */
-    std::vector<std::pair<std::vector<int>, double>> multiSourceMultiTargetEdgeFrontierDijkstra(
-    const std::vector<int>& sources,
-    const std::vector<int>& targets,
-    bool all);
+    double getDistance(int source, int target);
+    void sort_edges();
 
     int n;
     std::vector<std::vector<Edge>> adj;
-
-    void attach_lone_points();
-
-    /**
-     * sorts edges by length in adj
-     */
-    void sort_edges();
 };
 
 #endif // GRAPH_HPP

@@ -181,7 +181,7 @@ int analyse_spanner(Graph base_graph, Graph spanner_graph, string csv_out_path, 
             return 0;
         }
 
-std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner_graph, std::string csv_out_path, std::string all_edges_path, double percent) {
+std::string analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner_graph, std::string csv_out_path, std::string all_edges_path, double limit) {
     ///////////////////////////////////////////////////////////////////////////////////
     /// TEST random queries on the spanners
     /// analyse t-value
@@ -190,78 +190,93 @@ std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner
     vector<double> t_values_sum = vector<double>(base_graph.adj.size(), 0);
     vector<double> t_values_max = vector<double>(base_graph.adj.size(), 0);
     vector<int> edges_v = vector<int>(base_graph.adj.size(), 0);
-    vector<vector<int>> t_histogram = vector<vector<int>>(); // histogram with 20 bins
     vector<vector<Edge>> worst_edges = vector<vector<Edge>>(base_graph.adj.size());
     vector<string> all_edges = vector<string>(base_graph.adj.size());
     for (int i = 0; i < base_graph.adj.size(); i++) {
-        t_histogram.push_back(vector<int>(100));
         worst_edges.push_back(vector<Edge>());
     }
 
     int num_threads = std::max(1,omp_get_num_procs()-1);  // Get the number of available processors
-    //num_threads = 10; // TODO remove limit
 
     Timer timer;
     timer.start();
     ProgressBar progressBar;
-    int max = base_graph.adj.size(); // TODO remove limit
+    int max = base_graph.adj.size();
     progressBar.start(max);
-    int worst_edges_vector_size = (int)(base_graph.adj.size()*percent); // keep track of the 100 worst edges per node
 
 #pragma omp parallel for num_threads(num_threads) shared(spanner_graph, base_graph, t_values_sum, t_values_max) schedule(dynamic)
     for (int source = 0; source < max; source++) {
         progressBar.update(1);
+
+        if (omp_get_thread_num() == 0 & source % 1000 == 0) {
+            std::cout << "Analyzing source node " << source << "/" << max << std::endl;
+        }
+
         if (base_graph.adj[source].size() == 0) {
             //std::cout << "Node " << source << " has no edges in the base graph. Skipping." << std::endl;
             continue;
         }
 
-        std::vector<Edge> edges =  base_graph.adj[source];
+        std::vector<Edge> base_edges =  base_graph.adj[source];
 
-        if (edges.size() == 0) {
-            std::cerr << "Node " << source << " has no visible targets in the triangulation. Skipping." << std::endl;
+        if (base_edges.size() == 0) {
+            //std::cerr << "Node " << source << " has no visible targets in the triangulation. Skipping." << std::endl;
             continue;
         }
         if (spanner_graph.adj[source].size() == 0) {
             //std::cerr << "Node " << source << " has no edges in the spanner graph. Skipping." << std::endl;
             continue;
         }
-        // iterate over each target
-        for (int i = 0; i < edges.size(); i++) {
 
-            int target = edges[i].target;
-            Edge edge = edges[i];
+        vector<int> targets = vector<int>();
+        targets.reserve(base_edges.size());
+        for (auto edge : base_edges) {
+            targets.push_back(edge.target);
+            double meas_dist = euk_dist(spanner_graph.id_point_map[source], spanner_graph.id_point_map[edge.target]);
+            if (edge.weight != meas_dist) {
+                //std::cerr << "Edge weight mismatch for edge " << edge.source << " - " << edge.target << ": " << edge.weight << " vs " << meas_dist << std::endl;
+            }
+        }
+        auto res = spanner_graph.multiSourceMultiTargetDijkstra({source}, targets, true);
+
+        if (res.size() == 0) {
+            //std::cerr << "Dijkstra returned no results for source " << source << std::endl;
+            continue;
+        }
+
+        // iterate over each target
+        for (int i = 0; i < res.size(); i++) {
+
+            auto path = res[i].first; // distances from source to all nodes
+            auto dist = res[i].second; // paths from source to all nodes
+
+            int target = path[path.size()-1];
             if (source > target) {
                 continue; // to avoid double checks in undirected graph
             }
 
-            double original_dist = edge.weight;
-            auto spanner_theta_dist = numeric_limits<double>::infinity();
-            double spanner_dist  = spanner_graph.dijkstra(source, target).second;
-            if (normalize(spanner_dist) < normalize(original_dist)) {
-                std::cerr << "Spanner distance is less than original distance for edge " << source << " - " << target
-                    << ": " << spanner_dist << " vs " << original_dist << std::endl;
+
+            double original_dist = euk_dist(spanner_graph.id_point_map[source], spanner_graph.id_point_map[target]);
+            if (normalize(dist)+0.000001 < normalize(original_dist)) {
+                //std::cerr << "Spanner distance is less than original distance for edge " << source << " - " << target << ": " << dist << " vs " << original_dist << std::endl;
             }
 
-            double t_value = spanner_dist/original_dist;
-            worst_edges[source].push_back(Edge(source, target, edge.weight));
-            worst_edges[source].back().t_value = t_value;
-            all_edges[source] += to_string(source) + "," + to_string(target) + "," + to_string(normalize(t_value)) + "," + to_string(original_dist) + "\n";
+            double t_value = dist/original_dist;
+            if (t_value > limit) {
+                worst_edges[source].push_back(Edge(source, target, dist));
+            }
 
             t_values_sum[source] += t_value;
             edges_v[source] += 1;
             if (t_value > t_values_max[source]) {
                 t_values_max[source] = t_value;
             }
-            int histogram_index = std::min(static_cast<int>((t_value-1) * 1000), 99); // cap at 10.0
-            t_histogram[i][histogram_index] += 1;
-
                     // sanity checks
-                    if (normalize(spanner_dist) < normalize(original_dist)) {
+                    if (normalize(dist) < normalize(original_dist)) {
                         //std::cout << "ERROR: Spanner distance is less than original distance for source " << source << " and target " << target << std::endl;
                         //std::cout << "Original distance: " << original_dist << ", Spanner distance: " << spanner_dist << std::endl;
                     }
-                    if (spanner_dist == numeric_limits<double>::infinity()) {
+                    if (dist == numeric_limits<double>::infinity()) {
                         //std::cout << "ERROR: Spanner distance is infinity for source " << source << " and target " << target << std::endl;
                     }
                 }
@@ -275,7 +290,6 @@ std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner
             double t_values_all_sum = 0.0;
             int edges = 0;
             double max_t_all = 0.0;
-            vector<int> full_histogramm = vector<int>(100);
             vector<Edge> full_worst_edges;
             auto edge_out_stream = ofstream(all_edges_path, ios_base::app);
             //edge_out_stream << "source,target,t_value,original_distance\n";
@@ -287,9 +301,6 @@ std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner
                     if (t_values_max[i] > max_t_all) {
                         max_t_all = t_values_max[i];
                     }
-                    for (int j = 0; j < t_histogram[i].size(); j++) {
-                        full_histogramm[j] += t_histogram[i][j];
-                    }
                     // merge worst edges results
                     for(Edge edge:worst_edges[i]) {
                         full_worst_edges.push_back(edge);
@@ -299,13 +310,7 @@ std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner
                 }
             }
             edge_out_stream.close();
-            // sort worst edges
-            std::sort(full_worst_edges.begin(), full_worst_edges.end(), [](const Edge &a, const Edge &b) {
-                return a.t_value > b.t_value;
-            });
-            if (full_worst_edges.size() > worst_edges_vector_size) {
-                full_worst_edges.resize(worst_edges_vector_size);
-            }
+
 
             cout << "----------------------------------------------------------------------------------" << endl;
             cout << endl << "Results after analysing all edges:" << endl;
@@ -316,15 +321,9 @@ std::vector<Edge> analyse_spanner_with_vis_graph(Graph base_graph, Graph spanner
             cout << "Number of paths checked: " << edges << endl;
             cout << "----------------------------------------------------------------------------------" << endl;
 
-            // TODO store full histogramm in csv
-            auto csv_out_stream = ofstream(csv_out_path);
-            csv_out_stream << "t_value,frequency" << endl;
-            for (int i = 0; i < full_histogramm.size(); i++) {
-                csv_out_stream << normalize(1.0 + i * 0.001) << "," << full_histogramm[i] << endl;
+
+return std::string("size: ,") + std::to_string(spanner_graph.number_of_edges) + ", average: ," + std::to_string(normalize(t_values_all_sum/edges)) + ", max: ," + std::to_string(normalize(max_t_all)) + "\n";
             }
-            csv_out_stream.close();
-            return full_worst_edges;
-        }
 
 double get_furthest_distance_in_graph(Graph* graph) {
     // identify the furthest distance in the graph
@@ -364,7 +363,7 @@ double get_furthest_distance_in_graph(Graph* graph) {
 
 // ...
 
-void analyse_long_random_paths_with_vis_graph(Graph base_graph, Graph spanner_graph,
+std::string analyse_long_random_paths_with_vis_graph(Graph base_graph, Graph spanner_graph,
     std::string csv_out_path, int max, int theta, double plimit) {
 
     const double limit = get_furthest_distance_in_graph(&base_graph) * plimit;
@@ -380,6 +379,7 @@ void analyse_long_random_paths_with_vis_graph(Graph base_graph, Graph spanner_gr
 
     const int64_t N = static_cast<int64_t>(base_graph.adj.size());
     const int num_threads = std::max(1, omp_get_num_procs() - 1);
+    size_t total_counter = 0;
 
     std::atomic<int> produced{0};
 
@@ -390,8 +390,13 @@ void analyse_long_random_paths_with_vis_graph(Graph base_graph, Graph spanner_gr
         std::uniform_int_distribution<int64_t> pick(0, N - 1);
 
         while (true) {
+            total_counter++;
             // Early check: if already reached, stop
             if (produced.load(std::memory_order_relaxed) >= max) break;
+            if (omp_get_thread_num() == 0 && total_counter % 1000 == 0) {
+                std::cout << "Tried " << total_counter << " candidate pairs, produced "
+                          << produced.load() << "/" << max << " samples.\n";
+            }
 
             // Draw a candidate pair
             int64_t source = pick(rng);
@@ -428,6 +433,11 @@ void analyse_long_random_paths_with_vis_graph(Graph base_graph, Graph spanner_gr
             // Reserve a unique sample slot
             int slot = produced.fetch_add(1, std::memory_order_relaxed);
             if (slot >= max) break; // we raced past the cap
+            if (total_counter > 10*max) {
+                std::cout << "Warning: had to try " << total_counter
+                          << " candidate pairs to produce " << max << " samples.\n";
+                break;
+            }
 
             // --- Write results to "slot" (unique; no data race) ---
             all_edges[slot] += std::to_string(source) + "," + std::to_string(target) + "," +
@@ -491,23 +501,26 @@ void analyse_long_random_paths_with_vis_graph(Graph base_graph, Graph spanner_gr
     std::cout << "Number of valid paths tested: " << edges << " (samples: " << produced_count << ")\n";
     std::cout << "size of the spanner: " << spanner_graph.number_of_edges << "\n";
     std::cout << "----------------------------------------------------------------------------------\n";
+    return std::to_string(theta) + std::string(", long paths, size: ,") + std::to_string(spanner_graph.number_of_edges) +
+           ", average: ," + std::to_string(normalize(edges ? (t_values_all_sum / edges) : 0.0)) +
+           ", max: ," + std::to_string(normalize(max_t_all)) + "\n";
 }
 
 
-void analyse_random_paths_with_vis_graph(Graph base_graph, Graph spanner_graph, std::string csv_out_path, int max, int theta) {
+std::string analyse_random_paths_with_vis_graph(Graph base_graph, Graph spanner_graph, std::string csv_out_path, int max, int theta) {
     ///////////////////////////////////////////////////////////////////////////////////
     /// TEST random queries on the spanners
     /// analyse t-value
     ///////////////////////////////////////////////////////////////////////////////////
 
-    vector<double> t_values_sum = vector<double>(max, 0);
-    vector<double> t_values_max = vector<double>(max, 0);
+    vector<double> t_values_sum = vector<double>(base_graph.adj.size(), 0);
+    vector<double> t_values_max = vector<double>(base_graph.adj.size(), 0);
     vector<vector<pair<int64_t, int64_t>>> edge_log = vector<vector<pair<int64_t, int64_t>>>(); // log of (source, target) pairs per thread
     vector<vector<int64_t>> node_log = vector<vector<int64_t>>(); // log of nodes used per thread
-    vector<int> edges_v = vector<int>(max, 0);
+    vector<int> edges_v = vector<int>(base_graph.adj.size(), 0);
     vector<vector<int>> t_histogram = vector<vector<int>>(); // histogram with 20 bins
-    vector<string> all_edges = vector<string>(max);
-    for (int i = 0; i < max; i++) {
+    vector<string> all_edges = vector<string>(base_graph.adj.size());
+    for (int i = 0; i < base_graph.adj.size(); i++) {
         t_histogram.push_back(vector<int>(100));
         edge_log.push_back(vector<pair<int64_t, int64_t>>());
         node_log.push_back(vector<int64_t>());
@@ -632,6 +645,10 @@ void analyse_random_paths_with_vis_graph(Graph base_graph, Graph spanner_graph, 
             cout << "Number of paths tested: " << edges << endl;
             cout << "size of the spanner: " << spanner_graph.number_of_edges << endl;
             cout << "----------------------------------------------------------------------------------" << endl;
+
+    return std::to_string(theta) + std::string(", random paths, size: ,") + std::to_string(spanner_graph.number_of_edges) +
+   ", average: ," + std::to_string(normalize(edges ? (t_values_all_sum / edges) : 0.0)) +
+   ", max: ," + std::to_string(normalize(max_t_all)) + "\n";
 
         }
 

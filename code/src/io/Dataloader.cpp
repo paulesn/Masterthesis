@@ -55,8 +55,8 @@ std::tuple<std::vector<Pointc>,Graph> load_fmi(const std::string &filepath, int 
     int counter = 0;
 
     int number_of_nodes = 0;
-    int number_of_edges = 0;
-    int technical_counter = -2;
+    size_t number_of_edges = 0;
+    size_t technical_counter = -2;
     Graph g = Graph(1);
     bool graph_created = false;
 
@@ -79,7 +79,7 @@ std::tuple<std::vector<Pointc>,Graph> load_fmi(const std::string &filepath, int 
         }
         if (technical_counter == -1) {
             // Second line contains the number of edges
-            number_of_edges = std::stoi(line);
+            number_of_edges = std::stol(line);
             technical_counter++;
             cout << "Loading Nodes \n>";
             continue;
@@ -96,7 +96,7 @@ std::tuple<std::vector<Pointc>,Graph> load_fmi(const std::string &filepath, int 
 
             auto arr = split(line, delimiter);
             // this creates the point. the data is in the format: id nonesense x y ...
-            systems.emplace_back(stoi(arr[2]), stod(arr[3]), stod(arr[0]));
+            systems.emplace_back(stoi(arr[2]), stod(arr[3]), stod(arr[0]), stod(arr[4]));
         } else {
             if (!with_edges) {
                 // If we are not loading edges, we can stop here
@@ -123,7 +123,7 @@ std::tuple<std::vector<Pointc>,Graph> load_fmi(const std::string &filepath, int 
                 g = Graph(systems);
                 graph_created = true;
             }
-            g.addEdge(stoi(arr[0]), stoi(arr[1]), stod(arr[2]), true);
+            g.addEdge(stoi(arr[0]), stoi(arr[1]), stod(arr[2]), false);
         }
     }
 
@@ -143,13 +143,13 @@ Graph load_coastline(const std::string &filepath) {
         raise(SIGINT); // Raise SIGINT to terminate the program
     }
 
-    int counter = 0;
-    int number_of_nodes = 0;
-    int number_of_edges = 0;
+    size_t counter = 0;
+    size_t number_of_nodes = 0;
+    size_t number_of_edges = 0;
 
     bool coastline_active = false;
-    int last = -1;
-    int first = -1;
+    size_t last = -1;
+    size_t first = -1;
 
     for (std::string line; std::getline(file, line);){
         // defensive programming
@@ -193,9 +193,5 @@ Graph load_coastline(const std::string &filepath) {
         g.addEdge(get<0>(edge), get<1>(edge), 1.0); // Assuming weight of 1.0 for coastline edges
     }
     return g;
-}
-
-Graph load_gamemap(const std::string &filepath) {
-
 }
 
