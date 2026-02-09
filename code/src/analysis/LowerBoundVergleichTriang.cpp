@@ -87,8 +87,9 @@ double triang_dijkstra(int src, int dest, Triangulation triang) {
 int main(int argc, char* argv[]) {
 
 
-    Graph graph = get<1>(load_fmi("../../data/0025daniel.fmi"));
-    std::cout << "graph loaded" << endl;
+    Triangulation triang;
+    triang.readFromGraph("../../data/coastlines25.txt.graph");
+    std::cout << "triangulation loaded" << endl;
 
     /*
      *This code tests the triangulation dijkstra against the graph dijkstra for 100 random pairs of nodes. It counts how many times the distances do not match and prints the results.
@@ -117,7 +118,7 @@ int main(int argc, char* argv[]) {
         int src = stoi(csv[i][0]);
         int trg = stoi(csv[i][1]);
 
-        if (src >= graph.adj.size() || trg >= graph.adj.size()) {
+        if (src >= triang.getPoints()->size() || trg >= triang.getPoints()->size()) {
             std::cerr << "Node ID out of range: " << src << " or " << trg << std::endl;
             continue;
         }
@@ -127,7 +128,7 @@ int main(int argc, char* argv[]) {
         double true_dist;
         {
             auto t0 = std::chrono::high_resolution_clock::now();
-            true_dist = graph.dijkstra(src, trg, false).second;
+            true_dist = triang_dijkstra(src, trg, triang);
             auto t1 = std::chrono::high_resolution_clock::now();
             auto dur = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
 
