@@ -3,16 +3,12 @@
 //
 
 #include "../io/Dataloader.hpp"
-#include <omp.h>
-
-#include "MultiThetaAnalysis.h"
 #include "../spanner/ThetaSpanner.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
 #include <sstream>
-#include "../daniel/theta-graph/headers/Triangulation.h"
 
 using namespace std;
 
@@ -48,40 +44,6 @@ std::vector<std::vector<std::string>> loadCSV(const std::string& filename) {
 
     file.close();
     return data;
-}
-
-double triang_dijkstra(int src, int dest, Triangulation triang) {
-    const double INF = numeric_limits<double>::infinity();
-    int n = triang.getPoints()->size();
-    vector<double> dist(n, INF);
-    vector<int> edge_count(n, 0);
-    dist[src] = 0.0;
-
-    // Min-heap priority queue: (distance, node)
-    using NodeDist = pair<double, int>;
-    priority_queue<NodeDist, vector<NodeDist>, greater<NodeDist>> pq;
-    pq.push({0.0, src});
-
-    while (!pq.empty()) {
-        auto [d, source] = pq.top();
-        pq.pop();
-        if (d > dist[source]) continue;
-        if (source == dest) break;  // Stop early if we reached destination
-
-        std::vector<GlobalID> temp = triang.oneToAllVisibility(source, false);
-        for (auto t : temp) {
-            int target = (int) t;
-            Point u = triang.getPoint(source);
-            Point v = triang.getPoint(target);
-            double w = u.distance(v);
-            double nd = d + w;
-            if (nd < dist[target]) {
-                dist[target] = nd;
-                pq.emplace(nd, target);
-            }
-        }
-    }
-    return dist[dest];
 }
 
 int main(int argc, char* argv[]) {
