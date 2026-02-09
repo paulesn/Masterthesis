@@ -78,23 +78,9 @@ add_executable(lowerboundTriang
 )
 add_executable(lowerbound
         src/analysis/LowerBoundVergleich.cpp
-        src/analysis/MultiThetaAnalysis.cpp
 
-        src/daniel/theta-graph/headers/Progressbar.h
-        src/daniel/theta-graph/headers/Timer.h
-        src/daniel/theta-graph/sources/Triangulation.cpp
-        src/daniel/theta-graph/headers/Triangulation.h
-        src/daniel/theta-graph/headers/Geometry.h
-        src/daniel/theta-graph/sources/Geometry.cpp
-        src/daniel/theta-graph/headers/Structs.h
-
-        src/io/DataWriter.cpp
-        src/io/DataWriter.h
         src/io/Dataloader.cpp
         src/io/Dataloader.hpp
-
-        src/spanner/ThetaSpanner.hpp
-        src/spanner/ThetaSpanner.cpp
 
         src/structure/Graph.cpp
         src/structure/Graph.hpp
