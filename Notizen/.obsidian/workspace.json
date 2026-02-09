@@ -11,16 +11,14 @@
             "id": "e60c7ca023ccbb53",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "markdown",
               "state": {
-                "file": "Related Work/Approximation Algorithm for Motion Planning.pdf",
-                "page": 4,
-                "left": -11,
-                "top": 60,
-                "zoom": 1.6172638436482085
+                "file": "Ideen/Datenübersicht.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-file-text",
-              "title": "Approximation Algorithm for Motion Planning"
+              "icon": "lucide-file",
+              "title": "Datenübersicht"
             }
           },
           {
@@ -29,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Related Work/Notes on Spanners.md",
+                "file": "Ideen/Probability on Theta Spanner/Probability on theta spanner on empty Visgraphs.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Notes on Spanners"
+              "title": "Probability on theta spanner on empty Visgraphs"
             }
           }
         ]
@@ -110,7 +108,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Related Work/Approximation Algorithm for Motion Planning.pdf",
+                "file": "Ideen/Datenübersicht.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -120,7 +118,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Approximation Algorithm for Motion Planning"
+              "title": "Backlinks for Datenübersicht"
             }
           },
           {
@@ -192,20 +190,35 @@
   },
   "active": "e60c7ca023ccbb53",
   "lastOpenFiles": [
-    "Related Work/Notes on Spanners.md",
-    "Related Work/Approximation Algorithm for Motion Planning.pdf",
-    "Ideen/Theta Graphen/Gegenbeweis Theta Spanner.md",
-    "Ideen/Spanner for Visibility Graphs/n 2 Proof v2.md",
-    "Ideen/Spanner for Visibility Graphs/Construction using Longest Edge Separation.md",
-    "Ideen/Theta Graphen",
-    "Ideen/Spanner for Visibility Graphs/S=G Spanner in Visibility Graphs.md",
+    "Related Work/Route Planning in Elite Dangerous.md",
     "Related Work/Giri Narasimhan, Michiel Smid - Geometric Spanner Networks-Cambridge University Press (2007).pdf",
     "Related Work/PelegAndUlmann.pdf",
+    "Ideen/Datenübersicht.md",
+    "Ideen/Probability on Theta Spanner/Probability on theta spanner on empty Visgraphs.md",
+    "Pasted image 20251014152512.png",
+    "alltheta.png",
+    "Pasted image 20251009092057.png",
+    "Ideen/Spanner for Visibility Graphs/n 2 Proof v2.md",
+    "Ideen/Spanner for Visibility Graphs/Construction with SPL Metric.md",
+    "Ideen/Spanner for Visibility Graphs/Construction using Longest Edge Separation.md",
+    "Pasted image 20250930183234.png",
+    "Pasted image 20250930183201.png",
+    "Pasted image 20250930183100.png",
+    "Pasted image 20250930182956.png",
+    "Pasted image 20250930182822.png",
+    "Pasted image 20250930182639.png",
+    "Pasted image 20250930182313.png",
+    "Ideen/Probability on Theta Spanner",
+    "Related Work/Notes on Spanners.md",
+    "Ideen/Theta Graphen/Experiment Logs dynamic theta Graph.md",
+    "Related Work/Approximation Algorithm for Motion Planning.pdf",
+    "Ideen/Theta Graphen/Gegenbeweis Theta Spanner.md",
+    "Ideen/Theta Graphen",
+    "Ideen/Spanner for Visibility Graphs/S=G Spanner in Visibility Graphs.md",
     "Ideen/Spanner for Visibility Graphs/S=G Spanner in P-Constructed Visibility Graphs.md",
     "Ideen/Spanner for Visibility Graphs/(old) Beispiel für n**2 Spanner in Visibility Graphs.md",
     "Ideen/Length Filtered Spanner/WSPD Construction.md",
     "Ideen/Length Filtered Spanner/Fast Closet pair Approximation.md",
-    "Ideen/Spanner for Visibility Graphs/Construction with SPL Metric.md",
     "Ideen/Spanner for Visibility Graphs/Problem Statement.md",
     "zzz_OTHER/Theo Memory.md",
     "Ideen/MISC/Improved Spanners.md",
@@ -221,14 +234,6 @@
     "Ideen/MISC/3-approximation through grids.md",
     "Struktur/Begriffe.md",
     "media/Energy-Efficient Paths in Radio Networks.md",
-    "Related Work/Route Planning in Elite Dangerous.md",
-    "Struktur/Problemdefinition.md",
-    "Ink/Writing/2025.5.3 - 13.10pm.writing",
-    "Ink/Writing/2025.5.3 - 13.09pm.writing",
-    "Ideen/MISC/Top Down Path Split.md",
-    "media/Pasted image 20250430104352.png",
-    "media/Pasted image 20250430100042.png",
-    "media/Pasted image 20250430093455.png",
-    "Ideen/Primitive approach.md"
+    "Ink/Writing/2025.5.3 - 13.10pm.writing"
   ]
 }

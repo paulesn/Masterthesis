@@ -245,6 +245,7 @@ GVGdJ
 Gujja
 GXG
 GAm
+Größen
 start
 shorter
 shortcuts
@@ -565,6 +566,10 @@ saK
 siFm
 sSbZf
 sYOP
+sebastian
+sized
+sortiert
+sehen
 and
 an
 all
@@ -929,6 +934,12 @@ aSd
 alSV
 aONnm
 applicable
+axis
+alle
+auf
+als
+avg
+anschauen
 target
 to
 the
@@ -1212,6 +1223,8 @@ tKCn
 tQmO
 tpF
 taken
+took
+tests
 we
 with
 want
@@ -1458,6 +1471,15 @@ wfgG
 wzw
 wzp
 wFm
+working
+worse
+wäre
+wie
+werden
+wurden
+wurde
+wert
+whole
 draw
 defined
 distance
@@ -1763,6 +1785,12 @@ dfb
 dgA
 dpA
 desired
+debug
+directory
+duplicate
+dieser
+dem
+diesen
 edge
 edges
 each
@@ -2051,6 +2079,12 @@ ecN
 eQr
 exM
 ensures
+exit
+extrem
+erreichen
+extra
+eine
+einmal
 from
 found
 for
@@ -2337,6 +2371,13 @@ fff
 faO
 follows
 family
+fmi
+fallbacks
+finished
+folgende
+freq
+folgenden
+follow
 We
 With
 While
@@ -2566,6 +2607,8 @@ WDP
 WWlDts
 WlU
 WSQ
+WSPDTest
+Wert
 choose
 closest
 condition
@@ -2908,6 +2951,12 @@ cone
 critical
 collectiou
 convex
+code
+cmake
+completed
+constructions
+correlation
+continuous
 longest
 list
 length
@@ -3208,6 +3257,7 @@ ldpCSoC
 lla
 llS
 lTS
+linie
 in
 identify
 its
@@ -3544,6 +3594,10 @@ iXV
 ixA
 include
 ich
+inf
+ihrem
+ihren
+intervall
 our
 on
 of
@@ -3791,6 +3845,8 @@ ooa
 obtain
 obtained
 obstacle
+originialen
+oder
 path
 point
 points
@@ -4087,6 +4143,7 @@ phDN
 present
 polytopcs
 polytops
+passiert
 midpoint
 most
 more
@@ -4392,6 +4449,9 @@ mXa
 mxi
 mWY
 mBx
+mean
+müssen
+mehere
 replace
 range
 represented
@@ -4685,6 +4745,8 @@ rZj
 rke
 rwjU
 result
+replacing
+rote
 new
 no
 next
@@ -4936,6 +4998,9 @@ nNZS
 nDejrq
 nWI
 noch
+nach
+nachdem
+nimmt
 Repeat
 Remove
 Requirements
@@ -5379,6 +5444,7 @@ uTB
 uDnF
 uSS
 uLP
+und
 jump
 jumps
 jYQ
@@ -5579,6 +5645,7 @@ jWF
 jGja
 jNj
 jHr
+jeden
 Stop
 Speedup
 Specifically
@@ -5829,6 +5896,7 @@ Shv
 Shown
 Such
 Spanning
+Skipped
 by
 becomes
 between
@@ -6080,6 +6148,7 @@ bTk
 brv
 bxL
 boundary
+been
 Points
 Proof
 Purpose
@@ -6332,6 +6401,14 @@ PcT
 PCHr
 PaPa
 PEM
+Point
+Process
+Plot
+Plots
+Pfaden
+Pearson
+Punkte
+Prozentuale
 know
 known
 kd
@@ -6834,6 +6911,11 @@ hCT
 hXA
 hDDg
 habe
+home
+hinzufügt
+hinzugefügt
+heatmap
+häufig
 The
 Therefore
 Then
@@ -7059,6 +7141,7 @@ TIVMs
 Trh
 TyB
 Teil
+Tabelle
 graph
 grid
 given
@@ -7298,6 +7381,10 @@ gcs
 gOT
 gß
 garden
+gibt
+gewisses
+gesamtgröße
+gleichen
 Lemma
 LY
 Linearized
@@ -7544,6 +7631,9 @@ LFa
 LPL
 LTF
 LTlRi
+Loading
+Loaded
+Linie
 Each
 EtNgqSCW
 EDSM
@@ -8013,6 +8103,12 @@ vINnJY
 vAD
 visible
 verstanden
+vis
+viel
+verwendet
+visSpanner
+vergleicht
+vollen
 For
 Formal
 Factor
@@ -8268,6 +8364,7 @@ Fopt
 FRf
 Folv
 Figure
+Fall
 As
 Algorithm
 Add
@@ -8544,6 +8641,8 @@ Aqt
 AWf
 ANg
 Azt
+Alles
+Anzahl
 In
 If
 Info
@@ -8831,6 +8930,8 @@ IDmS
 IgT
 Iom
 IGo
+Inserting
+Inserted
 Neither
 Network
 Note
@@ -9056,6 +9157,7 @@ NDXoYqVh
 NDp
 NeL
 NBjA
+Nodes
 yes
 you
 yr
@@ -9574,6 +9676,10 @@ CbCj
 CiBCLZ
 CWak
 CUqw
+Current
+Creating
+Created
+Case
 Optimization
 Oy
 OQ
@@ -9810,6 +9916,7 @@ OPL
 OmHd
 OcMb
 OKU
+Orginalen
 Definition
 Does
 Dijkstra
@@ -10083,6 +10190,9 @@ DQD
 Dkqc
 Dwu
 Den
+Documents
+Die
+Diese
 Here
 Handwritten
 Hph
@@ -10312,6 +10422,7 @@ Hrp
 HgrOFNgBtR
 HRO
 HLK
+Hier
 Key
 KI
 Kc
@@ -10532,6 +10643,8 @@ KJZ
 KDH
 KIb
 KuT
+Kanten
+Kante
 query
 qj
 qr
@@ -10770,6 +10883,7 @@ qJa
 qUiSNY
 qWE
 qHy
+quadtree
 But
 Build
 BK
@@ -11019,6 +11133,8 @@ BYH
 Brc
 BYG
 BkOT
+Blaue
+Basis
 xref
 xC
 xJo
@@ -11478,6 +11594,10 @@ VrRA
 VErt
 Vhn
 VqX
+Value
+Vergleich
+Verhältnis
+Vis
 Jy
 JUf
 JY
@@ -12172,6 +12292,7 @@ MiBE
 MXi
 MHw
 MST
+Masterthesis
 YE
 YN
 Ya
@@ -12382,6 +12503,7 @@ YNG
 YNZ
 Yju
 Yao
+Yes
 QT
 QM
 QD
@@ -13050,6 +13172,10 @@ zyBh
 zkj
 zuam
 zmo
+zones
+zeigt
+zum
+zufälligen
 UJ
 Ui
 Using
@@ -13277,6 +13403,8 @@ UmtUIqeft
 UJR
 USU
 UoN
+Updating
+Updated
 äX
 üQF
 üO

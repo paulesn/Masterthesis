@@ -13,13 +13,13 @@
  * for use in unordered_set
  */
 struct PointHash {
-    std::size_t operator()(const Point& p) const;
+    std::size_t operator()(const Pointc& p) const;
 };
 
 /**
  * Euclidean distance between two points
  */
-double euklidian_distance(Point a, Point b);
+double euklidian_distance(Pointc a, Pointc b);
 
 /**
  * Node of the Quadtree with defind 4 or 0 children
@@ -29,7 +29,7 @@ struct QuadtreeNode {
      * A list of points in this cell. This list is never cleared so that each cell knows all points that were inserted into it.
      * TODO evaluate if this is necessary, maybe we can just use the points in the leaf nodes.
      */
-    std::vector<Point> points;
+    std::vector<Pointc> points;
     /**
      * The position and size information of the node.
      * cX and cY are the center coordinates of the node, height is half the width/height of the node;
@@ -79,15 +79,13 @@ struct QuadtreeNode {
     QuadtreeNode& operator=(const QuadtreeNode& other);
     ~QuadtreeNode();
 
-    void insert(Point s);
-    [[nodiscard]] bool area_contains(Point s) const;
+    void insert(Pointc s);
+    [[nodiscard]] bool area_contains(Pointc s) const;
     [[nodiscard]] bool intercept_rect(double x, double y, double h) const;
     [[nodiscard]] std::string rec_string(int level = 0) const;
-    std::vector<int> angle_intersect(Point source, double angle_a, double angle_b) const;
+    [[nodiscard]] std::vector<Pointc> get_all_points() const;
 
-    [[nodiscard]] std::vector<Point> get_all_points() const;
-
-    [[nodiscard]] bool contains(const Point & p) const;
+    [[nodiscard]] bool contains(const Pointc & p) const;
 
     std::vector<int> circle_intersect(double x, double y, double r) const;
 
@@ -103,29 +101,26 @@ private:
      * @param angle_b the angle of the second ray
      * @return a vector of node ids that are in the area between the two rays.
      */
-    bool internal_angles_intersect(Point source, double angle_a, double angle_b) const ;
+    bool internal_angles_intersect(Pointc source, double angle_a, double angle_b) const ;
 
-    void insertInternal(Point s);
+    void insertInternal(Pointc s);
 };
 
 // Quadtree structure
 struct Quadtree {
     QuadtreeNode root;
     double height;
-    std::unordered_set<Point, PointHash> pointSet;
+    std::unordered_set<Pointc, PointHash> pointSet;
 
     explicit Quadtree(double height_ = 1);
     ~Quadtree() = default;
 
-std::vector<int> angle_intersect(Point source, double angle_a, double angle_b) const {
-        return root.angle_intersect(source, angle_a, angle_b);
-    }
 
 
-    bool insert(Point p);
+    bool insert(Pointc p);
     void print() const;
-    std::vector<Point> get_all_points() const;
-    bool contains(Point p) const{return root.contains(p);}
+    std::vector<Pointc> get_all_points() const;
+    bool contains(Pointc p) const{return root.contains(p);}
 
 
     std::vector<int> circle_intersect(double x, double y, double r) const {return root.circle_intersect(x,y,r);}
@@ -139,6 +134,18 @@ Graph wspd(const Quadtree* tree, double s, Graph* g);
 
 // WSPD using shortest-path distances from the Graph
 Graph wspd_spd(const Quadtree* tree, double s, Graph g);
+
+/**
+ * Creates a WSPD spanner based on visibility. The well separated sets are choosen based on euklidian distance
+ * but edges are only added iff there is an visibility edge between the two sets in the given visibility graph.
+ * Therefore this graph alone is not gurantieed to be a spanner of the original as it can be disconnected.
+ *
+ * @param tree the quadtree to use
+ * @param s the seperation factor to use
+ * @param coastlines the coastline graph to base the visibility on
+ * @return a wspd spanner based on visibility
+ */
+Graph wspd_for_visibility(const Quadtree* tree, double s, Graph* vis_graph);
 
 
 

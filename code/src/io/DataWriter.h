@@ -5,7 +5,7 @@
 #ifndef DATAWRITER_H
 #define DATAWRITER_H
 
-#include "Graph.hpp"
+#include "../structure/Graph.hpp"
 #include <fstream>
 #include <iostream>
 /**
@@ -15,6 +15,7 @@
  * @param g The graph to write to the file
  * @return 0 on success, 1 on failure
  */
-int write_gf(const Graph& g, std::string path);
-
+int write_gf(std::string path, int number_of_cones, std::vector<Pointc> path_to_draw, int cone_base=0);
+int write_gf_with_graph(std::string path, int number_of_cones, std::vector<Pointc> path_to_draw, int cone_base=0, Graph graph = Graph(1));
+int write_fmi(std::string path, const Graph& g);
 #endif //DATAWRITER_H
